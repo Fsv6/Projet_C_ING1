@@ -5,7 +5,7 @@
 #include "interpreter.h"
 
 void create_file();
-void open_file();
+void open_file(const char *directory);
 void save_file(const char *filename, const char *content);
 void change_file(char *current_file);
 void modify_file(const char *filepath, const char *filename);
@@ -14,8 +14,6 @@ void execute_and_interpret();
 int main() {
     int choice;
     char files_directory[256] = "draw_files";
-    char current_file[256] = "";
-
 
     do {
         printf("\n=== MENU PRINCIPAL ===\n");
@@ -34,21 +32,12 @@ int main() {
                 create_file();
             break;
             case 2:
-                open_file();
+                open_file(files_directory);
             break;
             case 3:
-                if (strlen(current_file) > 0) {
-                    char content[1024];
-                    printf("Entrez le contenu à sauvegarder dans %s : ", current_file);
-                    fgets(content, sizeof(content), stdin);
-                    content[strcspn(content, "\n")] = '\0'; // Supprime le \n
-                    save_file(current_file, content);
-                } else {
-                    printf("Aucun fichier courant. Veuillez d'abord en ouvrir ou en creer un.\n");
-                }
             break;
             case 4:
-                change_file(current_file);
+                //change_file(current_file);
             break;
             case 5:
                 execute_and_interpret(files_directory);
@@ -59,7 +48,7 @@ int main() {
             default:
                 printf("Choix invalide, veuillez réessayer.\n");
         }
-    } while (choice != 5);
+    } while (choice != 6);
 
     return 0;
 }
@@ -67,13 +56,13 @@ int main() {
 
 void create_file() {
     char filename[256];
-    printf("Entrez le nom du fichier a creer (avec extension .draw) : ");
+    printf("Entrez le nom du fichier a creer (sans extension) : ");
     scanf("%s", filename);
-    getchar(); // Consomme le caractère de nouvelle ligne
+    getchar();
 
 
     char filepath[512];
-    snprintf(filepath, sizeof(filepath), "H:/Documents/C/Projet/draw_files/%s", filename);
+    snprintf(filepath, sizeof(filepath), "../draw_files/%s.draw", filename);
 
 
     FILE *file = fopen(filepath, "w");
@@ -99,7 +88,7 @@ void create_file() {
     }
 
     fclose(file);
-    printf("Le fichier %s a été sauvegarde dans le repertoire draw_files.\n", filename);
+    printf("Le fichier %s a ete sauvegarde dans le repertoire draw_files.\n", filename);
 }
 
 
@@ -107,23 +96,26 @@ void create_file() {
 
 
 
-void list_files_in_directory(const char *directory) {
-    DIR *dir = opendir("H:/Documents/C/Projet/draw_files");
+int list_files_in_directory(const char *directory) {
+    DIR *dir;
+    struct dirent *entry;
+    int count = 0;
+
+    dir = opendir("../draw_files");
     if (dir == NULL) {
-        printf("Erreur : Impossible d'ouvrir le répertoire %s.\n", directory);
-        return;
+        printf("Erreur : Impossible d'ouvrir le repertoire '%s'.\n", directory);
+        return 0;
     }
 
-    struct dirent *entry;
-    printf("Fichiers disponibles dans %s :\n", directory);
-    int index = 1;
     while ((entry = readdir(dir)) != NULL) {
-
-        if (strstr(entry->d_name, ".draw") != NULL) {
-            printf("%d. %s\n", index++, entry->d_name);
+        if (entry->d_name == ".draw") {
+            printf("- %s\n", entry->d_name);
+            count++;
         }
     }
+
     closedir(dir);
+    return count;
 }
 
 
@@ -134,16 +126,19 @@ void open_file(const char *directory) {
 
 
     printf("=== Liste des fichiers disponibles ===\n");
-    list_files_in_directory(directory);
+    int file_count = list_files_in_directory(directory);
 
-//TODO : ne pas demander d'entrer de fichier si la liste n'est pas affiché
+    if (file_count == 0) {
+        printf("Aucun fichier disponible dans le repertoire '%s'.\n", directory);
+        return;
+    }
 
-    printf("\nEntrez le nom du fichier a ouvrir (avec extension .draw) : ");
+    printf("\nEntrez le nom du fichier a ouvrir (sans extension) : ");
     scanf("%s", filename);
     getchar();
 
 
-    snprintf(filepath, sizeof(filepath), "H:/Documents/C/Projet/draw_files/%s", filename);
+    snprintf(filepath, sizeof(filepath), "../draw_files/%s.draw", filename);
 
 
     FILE *file = fopen(filepath, "r");
@@ -164,7 +159,7 @@ void open_file(const char *directory) {
     printf("\nVoulez-vous modifier ce fichier ? (o/n) : ");
     char response;
     scanf(" %c", &response);
-    getchar(); // Consomme le caractère de nouvelle ligne
+    getchar();
 
     if (response == 'o' || response == 'O') {
         modify_file(filepath, filename);
@@ -213,7 +208,7 @@ void modify_file(const char *filepath, const char *filename) {
         }
         fclose(file);
     } else if (choice == 2) {
-        // Remplacer tout le contenu
+
         file = fopen(filepath, "w"); // Write mode (overwrite)
         if (file == NULL) {
             printf("Erreur : Impossible de modifier le fichier %s.\n", filepath);
@@ -223,7 +218,7 @@ void modify_file(const char *filepath, const char *filename) {
         while (1) {
             printf("> ");
             fgets(line, sizeof(line), stdin);
-            line[strcspn(line, "\n")] = '\0'; // Supprime le \n
+            line[strcspn(line, "\n")] = '\0';
             if (strcmp(line, "FIN") == 0) {
                 break;
             }
@@ -245,25 +240,22 @@ void change_file(char *current_file) {
 }
 
 void execute_and_interpret() {
-    char draw_filename[256], python_filename[256];
-
-
-    printf("Entrez le nom du fichier .draw a interpreter : ");
+    char draw_filename[256];
+    printf("Entrez le nom du fichier .draw a interpreter (sans extension) : ");
     scanf("%s", draw_filename);
     getchar();
 
-    printf("Entrez le nom du fichier Python a generer (avec extension .py) : ");
-    scanf("%s", python_filename);
-    getchar();
 
-    // Construire les chemins complets
     char draw_filepath[512], python_filepath[512];
-    snprintf(draw_filepath, sizeof(draw_filepath), "H:/Documents/C/Projet/draw_files/%s", draw_filename);
-    snprintf(python_filepath, sizeof(python_filepath), "H:/Documents/C/Projet/py_files_directory/%s",  python_filename);
+    snprintf(draw_filepath, sizeof(draw_filepath), "../draw_files/%s.draw", draw_filename);
 
-    // Appeler l'interpréteur
+    snprintf(python_filepath, sizeof(python_filepath), "../py_files_directory/%s.py", draw_filename);
+
     interpret_draw_file(draw_filepath, python_filepath);
+
+    printf("Le fichier Python correspondant a ete genere : %s\n", python_filepath);
 }
+
 
 
 
