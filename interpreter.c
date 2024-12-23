@@ -6,7 +6,16 @@
 #include "cursor_manager.h"
 
 
+/*
+Process a single command from the input file and generate the corresponding Python code.
 
+Args:
+    line (const char*): The line containing the command to process.
+    python_file (FILE*): The file where the generated Python code will be written.
+
+Returns:
+    None
+*/
 void process_command(const char *line, FILE *python_file) {
     char command_name[64], args[192];
 
@@ -29,50 +38,63 @@ void process_command(const char *line, FILE *python_file) {
 }
 
 
+
+/*
+Interpret a .draw file and generate a corresponding Python script.
+
+Args:
+    draw_filename (const char*): The path to the .draw file to interpret.
+    output_python_filename (const char*): The path to the Python script to generate.
+
+Returns:
+    None
+*/
 void interpret_draw_file(const char *draw_filename, const char *output_python_filename) {
     FILE *draw_file = fopen(draw_filename, "r");
     if (draw_file == NULL) {
-        printf("Erreur : Impossible d'ouvrir le fichier %s.\n", draw_filename);
+        printf("Error: Unable to open file %s.\n", draw_filename);
         return;
     }
 
     FILE *python_file = fopen(output_python_filename, "w");
     if (python_file == NULL) {
-        printf("Erreur : Impossible de creer le fichier %s.\n", output_python_filename);
+        printf("Error: Unable to create file %s.\n", output_python_filename);
         fclose(draw_file);
         return;
     }
 
-
+    // Initialize Python script with imports and global variables
     fprintf(python_file, "import turtle\n\n");
     fprintf(python_file, "if 'cursors' not in globals():\n");
     fprintf(python_file, "    cursors = {}\n\n");
 
-
+    // Generate code for axes
     generate_axes_code(python_file);
 
     char line[256];
     while (fgets(line, sizeof(line), draw_file)) {
-        line[strcspn(line, "\n")] = '\0'; // Supprime le \n à la fin
+        line[strcspn(line, "\n")] = '\0'; // Remove trailing newline character
         process_command(line, python_file);
     }
 
-
+    // Finalize the Python script
     fprintf(python_file, "turtle.done()\n");
 
     fclose(draw_file);
     fclose(python_file);
 
+    // Free allocated resources
     free_cursors();
 
-    printf("Fichier Python '%s' genere a partir de '%s'.\n", output_python_filename, draw_filename);
+    printf("Python file '%s' generated from '%s'.\n", output_python_filename, draw_filename);
 
+    // Execute the generated Python script
     char command[512];
     snprintf(command, sizeof(command), "py %s", output_python_filename);
     int result = system(command);
     if (result != 0) {
-        printf("Erreur : Impossible d'executer le fichier Python '%s'.\n", output_python_filename);
+        printf("Error: Unable to execute the Python file '%s'.\n", output_python_filename);
     } else {
-        printf("Execution terminee avec succes.\n");
+        printf("Execution completed successfully.\n");
     }
 }
