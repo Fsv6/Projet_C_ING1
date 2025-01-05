@@ -6,7 +6,7 @@
 #include <ctype.h>
 
 #include "commands.h"
-#include "variable.h"
+
 
 
 
@@ -18,7 +18,7 @@ static void skip_spaces(const char **expression) {
         (*expression)++;
     }
 }
-
+/*
 // Fonction pour analyser une expression (opérateurs + et -)
 static int parse_expression(const char **expression);
 static int parse_term(const char **expression);
@@ -119,4 +119,4 @@ int evaluate_expression(const char *expression) {
 }
 
 
-
+*/

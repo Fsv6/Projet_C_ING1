@@ -63,7 +63,7 @@ void create_file() {
 
 
     char filepath[512];
-    snprintf(filepath, sizeof(filepath), "./draw_files/%s.draw", filename);
+    snprintf(filepath, sizeof(filepath), "../draw_files/%s.draw", filename);
 
 
     FILE *file = fopen(filepath, "w");
@@ -135,7 +135,7 @@ void open_file(const char *directory) {
     getchar();
 
 
-    snprintf(filepath, sizeof(filepath), "./draw_files/%s.draw", filename);
+    snprintf(filepath, sizeof(filepath), "../draw_files/%s.draw", filename);
 
 
     FILE *file = fopen(filepath, "r");
@@ -262,9 +262,9 @@ void execute_and_interpret() {
 
 
     char draw_filepath[512], python_filepath[512];
-    snprintf(draw_filepath, sizeof(draw_filepath), "./draw_files/%s.draw", draw_filename);
+    snprintf(draw_filepath, sizeof(draw_filepath), "../draw_files/%s.draw", draw_filename);
 
-    snprintf(python_filepath, sizeof(python_filepath), "./py_files_directory/%s.py", draw_filename);
+    snprintf(python_filepath, sizeof(python_filepath), "../py_files_directory/%s.py", draw_filename);
 
     interpret_draw_file(draw_filepath, python_filepath);
 

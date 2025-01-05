@@ -7,10 +7,9 @@
 #include <ctype.h>
 
 #include "cursor_manager.h"
-#include "figure_manager.h"
+
 #include "interpreter.h"
-#include "parser.h"
-#include "variable.h"
+
 
 
 /*
@@ -24,15 +23,20 @@ Command commands[] = {
     {"COLOR", call_color_func_py, create_color_func_py},
     {"THICKNESS", call_thickness_func_py, create_thickness_func_py},
     {"MOVE", call_move_func_py, create_move_func_py},
-   {"ROTATE", call_rotate_func_py, create_rotate_func_py},
+    {"ROTATE", call_rotate_func_py, create_rotate_func_py},
     {"LINE", call_line_func_py, create_line_func_py},
     {"CIRCLE", call_circle_func_py, create_circle_func_py},
     {"SQUARE", call_square_func_py, create_square_func_py},
     {"POINT", call_point_func_py, create_point_func_py},
     {"ARC", call_arc_func_py, create_arc_func_py},
+    {"ANIME", call_animation_func_py, create_animation_func_py},
     {"IF",handle_if_python , NULL},
     {"FOR", handle_for_python, NULL},
-    //{"SET", handle_set_variable, create_set_variable_func_py},
+    {"SET", handle_set_variable, NULL},
+    {"WHILE", handle_while_python,NULL},
+    {"BREAK", handle_break_python, NULL},
+    {"CONTINUE", handle_continue_python, NULL},
+    {"PASS", handle_end_python, NULL},
 
     {NULL, NULL, NULL} // Fin de tableau
 };
@@ -60,10 +64,20 @@ const char** get_command_names(Command commands[], int* count) {
 void set_python_file(FILE *python_file) {
     // Génère le code Python pour initialiser le curseur
     fprintf(python_file, "import turtle\n");
+    fprintf(python_file, "import time\n");
+    fprintf(python_file, "import math\n");
     fprintf(python_file, "if 'cursors' not in globals():\n");
     fprintf(python_file, "    cursors = {}\n");
-    fprintf(python_file, "turtle.setup(800, 600)\n");
-    fprintf(python_file, "turtle.title('Test cursors')\n\n");
+    fprintf(python_file, "    turtle.setup(800, 600)\n");
+    fprintf(python_file, "    turtle.title('Projects Cursors')\n");
+    fprintf(python_file, "    turtle.tracer(n=2, delay=10)\n");
+    fprintf(python_file, "\n");
+    fprintf(python_file, "def set_all_cursors_speed(speed):\n");
+    fprintf(python_file, "    for cursor in cursors.values():\n");
+    fprintf(python_file, "        cursor['turtle'].speed(speed)\n");
+    fprintf(python_file, "shapes = []\n");
+    fprintf(python_file, "animation_shapes = []\n");
+
 }
 void end_python_file(FILE *python_file) {
     // Génère le code Python pour initialiser le curseur
@@ -102,39 +116,39 @@ void create_cursor_func_py(FILE *python_file) {
     fprintf(python_file, "        cursors[id]['turtle'].color('black')\n");
     fprintf(python_file, "        cursors[id]['turtle'].pensize(1)\n");
     fprintf(python_file, "        cursors[id]['turtle'].penup()\n");
-    fprintf(python_file, "\n");
+    fprintf(python_file, "        cursors[id]['turtle'].speed(1)\n");
     fprintf(python_file, "    turtle.tracer(0)\n");
-    fprintf(python_file, "\n");
     fprintf(python_file, "    cursors[id]['x'] = x\n");
     fprintf(python_file, "    cursors[id]['y'] = y\n");
     fprintf(python_file, "    cursors[id]['turtle'].setpos(x, y)\n");
-    fprintf(python_file, "\n");
     fprintf(python_file, "    if  (visible == 'TRUE') :\n");
     fprintf(python_file, "        cursors[id]['turtle'].showturtle()\n");
     fprintf(python_file, "    else :\n");
     fprintf(python_file, "        cursors[id]['turtle'].hideturtle()\n");
-    fprintf(python_file, "\n");
     fprintf(python_file, "    turtle.tracer(1)\n");
     fprintf(python_file, "    turtle.update()\n");
+
+
 }
 //handle_cursor('cursor1', 100, 100, True)
 
 void call_cursor_func_py(const char *args,FILE *python_file) {
     char id[64];
     char visible[64];
-    int x, y;
+    char x[64];
+    char y[64];
 
     // Extraire les valeurs depuis la chaîne args
-    if (sscanf(args, "%63s %d %d %63s", id, &x, &y, visible) != 4) {
+    if (sscanf(args, "%63s %63s %63s %63s", id, &x, &y, visible) != 4) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
     }
 
     // Vérifiez que les valeurs extraites sont valides
-    printf("Parsed values - id: %s, x: %d, y: %d, visible: %s\n", id, x, y, visible);
+    printf("Parsed values - id: %s, x: %s, y: %s, visible: %s\n", id, x, y, visible);
 
     // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_cursor('%s', %d, %d, '%s')\n\n", id, x, y, visible);
+    fprintf(python_file, "handle_cursor(%s, %s, %s, '%s')\n", id, x, y, visible);
 }
 
 
@@ -168,7 +182,7 @@ void call_color_func_py(const char *args, FILE *python_file) {
     printf("Parsed values - id: %s, color : %s", id, color);
 
     // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_color('%s', '%s')\n\n", id, color);
+    fprintf(python_file, "handle_color(%s, '%s')\n", id, color);
 }
 
 
@@ -235,7 +249,30 @@ void call_move_func_py(const char *args, FILE *python_file) {
     printf("Parsed values - id: %s, distance : %s", id, distance);
 
     // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_move('%s', %s)\n", id, distance);
+    fprintf(python_file, "handle_move(%s, %s)\n", id, distance);
+}
+
+
+void create_goto_func_py(FILE *python_file) {
+    fprintf(python_file, "def handle_goto(id, x, y):\n");
+    fprintf(python_file, "    cursors[id]['turtle'].goto(x, y)\n");
+    fprintf(python_file, "    cursors[id]['x'], cursors[id]['y'] = cursors[id]['turtle'].pos()\n");
+}
+void call_goto_func_py(const char *args, FILE *python_file) {
+    char id[64];
+    char x[100];
+    char y[100];
+
+    // Extraire les valeurs depuis la chaîne args
+    if (sscanf(args, "%63s %100s %100s", id, x, y) != 3) {
+        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
+        return;
+    }
+
+    printf("Parsed values - id: %s, x : %s, y : %s", id, x, y);
+
+    // faire un appel dans python à la fonction qui gère les curseurs
+    fprintf(python_file, "handle_goto(%s, %s, %s)\n", id, x, y);
 }
 
 
@@ -257,18 +294,18 @@ void create_rotate_func_py(FILE *python_file) {
 }
 void call_rotate_func_py(const char *args, FILE *python_file) {
     char id[64];
-    int angle;
+    char angle[64];
 
     // Extraire les valeurs depuis la chaîne args
-    if (sscanf(args, "%63s %d", id, angle) != 2) {
+    if (sscanf(args, "%63s %63s", id, angle) != 2) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
     }
 
-    printf("Parsed values - id: %s, angle : %d", id, angle);
+    printf("Parsed values - id: %s, angle : %s", id, angle);
 
     // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_rotate('%s', %d)\n", id, angle);
+    fprintf(python_file, "handle_rotate('%s', %s)\n", id, angle);
 }
 
 
@@ -284,26 +321,37 @@ Returns:
     None
 */
 void create_line_func_py(FILE *python_file) {
-    fprintf(python_file, "def handle_line(id, distance):\n");
+    fprintf(python_file, "def handle_line(id, position, distance, id_form, color='null'):\n");
+    fprintf(python_file, "    if position == 'null':\n");
+    fprintf(python_file, "        position = cursors[id]['turtle'].pos()\n");
+    fprintf(python_file, "    initial_color = cursors[id]['turtle'].pencolor()\n");
+    fprintf(python_file, "    if color != 'null':\n");
+    fprintf(python_file, "        cursors[id]['turtle'].color(color)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].penup()\n");
+    fprintf(python_file, "    cursors[id]['turtle'].goto(position)\n");
     fprintf(python_file, "    cursors[id]['turtle'].pendown()\n");
     fprintf(python_file, "    cursors[id]['turtle'].forward(distance)\n");
     fprintf(python_file, "    cursors[id]['x'], cursors[id]['y'] = cursors[id]['turtle'].pos()\n");
     fprintf(python_file, "    cursors[id]['turtle'].penup()\n");
+    fprintf(python_file, "    cursors[id]['turtle'].goto(position)\n");
+    fprintf(python_file, "    shapes.append((id_form, id, cursors[id]['turtle'].pos(), distance, 'line'))\n");
+    fprintf(python_file, "    cursors[id]['turtle'].color(initial_color)\n");
 }
 void call_line_func_py(const char *args, FILE *python_file) {
     char id[64];
-    int distance;
+    char distance[64];
+    char id_form[64];
 
     // Extraire les valeurs depuis la chaîne args
-    if (sscanf(args, "%63s %d", id, distance) != 2) {
+    if (sscanf(args, "%63s %63s %63s", id, distance, id_form) != 3) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
     }
 
-    printf("Parsed values - id: %s, distance : %d", id, distance);
+    printf("Parsed values - id: %s, distance : %s, id_form : %s", id, distance, id_form);
 
     // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_rotate('%s', %d)\n", id, distance);
+    fprintf(python_file, "handle_line(%s, 'null', %s, %s)\n", id, distance, id_form);
 }
 
 
@@ -319,26 +367,41 @@ Returns:
     None
 */
 void create_circle_func_py(FILE *python_file) {
-    fprintf(python_file, "def handle_circle(id, radius):\n");
+    fprintf(python_file, "def handle_circle(id, position, radius, id_form, color='null'):\n");
+    fprintf(python_file, "    if position == 'null':\n");
+    fprintf(python_file, "        position = cursors[id]['turtle'].pos()\n");
+    fprintf(python_file, "    initial_color = cursors[id]['turtle'].pencolor()\n");
+    fprintf(python_file, "\n");
+    fprintf(python_file, "    if color != 'null':\n");
+    fprintf(python_file, "        cursors[id]['turtle'].color(color)\n");
+    fprintf(python_file, "\n");
+    fprintf(python_file, "\n");
+    fprintf(python_file, "\n");
+    fprintf(python_file, "    cursors[id]['turtle'].penup()\n");
+    fprintf(python_file, "    cursors[id]['turtle'].goto(position)\n");
     fprintf(python_file, "    cursors[id]['turtle'].pendown()\n");
     fprintf(python_file, "    cursors[id]['turtle'].circle(radius)\n");
     fprintf(python_file, "    cursors[id]['x'], cursors[id]['y'] = cursors[id]['turtle'].pos()\n");
     fprintf(python_file, "    cursors[id]['turtle'].penup()\n");
+    fprintf(python_file, "    shapes.append((id_form, id, cursors[id]['turtle'].pos(), radius, 'circle'))\n");
+    fprintf(python_file, "\n");
+    fprintf(python_file, "    cursors[id]['turtle'].color(initial_color)\n");
 }
 void call_circle_func_py(const char *args, FILE *python_file) {
     char id[64];
-    int radius;
+    char radius[64];
+    char id_form[64];
 
     // Extraire les valeurs depuis la chaîne args
-    if (sscanf(args, "%63s %d", id, radius) != 2) {
+    if (sscanf(args, "%63s %63s %63s", id, radius, id_form) !=3) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
     }
 
-    printf("Parsed values - id: %s, radius : %d", id, radius);
+    printf("Parsed values - id: %s, radius : %s, id_form: %s", id, radius, id_form);
 
     // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_circle('%s', %d)\n", id, radius);
+    fprintf(python_file, "handle_circle(%s, 'null', %s, %s)\n", id, radius, id_form);
 }
 
 
@@ -354,28 +417,38 @@ Returns:
     None
 */
 void create_square_func_py(FILE *python_file) {
-    fprintf(python_file, "def handle_square(id, side_length):\n");
+    fprintf(python_file, "def handle_square(id, position, side_length, id_form, color='null'):\n");
+    fprintf(python_file, "    if position == 'null':\n");
+    fprintf(python_file, "        position = cursors[id]['turtle'].pos()\n");
+    fprintf(python_file, "    initial_color = cursors[id]['turtle'].pencolor()\n");
+    fprintf(python_file, "    if color != 'null':\n");
+    fprintf(python_file, "        cursors[id]['turtle'].color(color)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].penup()\n");
+    fprintf(python_file, "    cursors[id]['turtle'].goto(position)\n");
     fprintf(python_file, "    cursors[id]['turtle'].pendown()\n");
     fprintf(python_file, "    for _ in range(4):\n");
     fprintf(python_file, "        cursors[id]['turtle'].forward(side_length)\n");
     fprintf(python_file, "        cursors[id]['turtle'].left(90)\n");
     fprintf(python_file, "    cursors[id]['x'], cursors[id]['y'] = cursors[id]['turtle'].pos()\n");
     fprintf(python_file, "    cursors[id]['turtle'].penup()\n");
+    fprintf(python_file, "    shapes.append((id_form, id, cursors[id]['turtle'].pos(), side_length, 'square'))\n");
+    fprintf(python_file, "    cursors[id]['turtle'].color(initial_color)\n");
 }
 void call_square_func_py(const char *args, FILE *python_file) {
     char id[64];
-    int side_length;
+    char side_length[64];
+    char id_form[64];
 
     // Extraire les valeurs depuis la chaîne args
-    if (sscanf(args, "%63s %d", id, side_length) != 2) {
+    if (sscanf(args, "%63s %63s %63s", id, side_length, id_form) != 3) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
     }
 
-    printf("Parsed values - id: %s, side_length : %d", id, side_length);
+    printf("Parsed values - id: %s, side_length : %s, id_form: %s", id, side_length, id_form);
 
     // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_square('%s', %d)\n", id, side_length);
+    fprintf(python_file, "handle_square(%s, 'null', %s, %s)\n", id, side_length, id_form);
 }
 
 
@@ -390,27 +463,37 @@ Returns:
     None
 */
 void create_point_func_py(FILE *python_file) {
-    fprintf(python_file, "def handle_point(id):\n");
+    fprintf(python_file, "def handle_point(id, position, id_form, color='null'):\n");
+    fprintf(python_file, "    if position == 'null':\n");
+    fprintf(python_file, "        position = cursors[id]['turtle'].pos()\n");
+    fprintf(python_file, "    initial_color = cursors[id]['turtle'].pencolor()\n");
+    fprintf(python_file, "    if color != 'null':\n");
+    fprintf(python_file, "        cursors[id]['turtle'].color(color)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].penup()\n");
+    fprintf(python_file, "    cursors[id]['turtle'].goto(position)\n");
     fprintf(python_file, "    cursors[id]['turtle'].pendown()\n");
     fprintf(python_file, "    cursors[id]['turtle'].dot()\n");
     fprintf(python_file, "    cursors[id]['x'], cursors[id]['y'] = cursors[id]['turtle'].pos()\n");
     fprintf(python_file, "    cursors[id]['turtle'].penup()\n");
+    fprintf(python_file, "    cursors[id]['turtle'].goto(position)\n");
+    fprintf(python_file, "    shapes.append((id_form, id, cursors[id]['turtle'].pos(), 0, 'point'))\n");
+    fprintf(python_file, "    cursors[id]['turtle'].color(initial_color)\n");
 }
 void call_point_func_py(const char *args, FILE *python_file) {
     char id[64];
+    char id_form[64];
 
     // Extraire les valeurs depuis la chaîne args
-    if (sscanf(args, "%63s", id) != 2) {
+    if (sscanf(args, "%63s 63s", id, id_form) != 2) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
     }
 
-    printf("Parsed values - id: %s", id);
+    printf("Parsed values - id: %s, id_form: %s", id, id_form);
 
     // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_square('%s')\n", id);
+    fprintf(python_file, "handle_point('%s', 'null', %s)\n", id, id_form);
 }
-
 
 
 /*
@@ -425,28 +508,145 @@ Returns:
     None
 */
 void create_arc_func_py(FILE *python_file) {
-    fprintf(python_file, "def handle_semi_circle(id, radius):\n");
+    fprintf(python_file, "def handle_semi_circle(id, position, radius, id_form, color='null'):\n");
+    fprintf(python_file, "    if position == 'null':\n");
+    fprintf(python_file, "        position = cursors[id]['turtle'].pos()\n");
+    fprintf(python_file, "    initial_color = cursors[id]['turtle'].pencolor()\n");
+    fprintf(python_file, "    if color != 'null':\n");
+    fprintf(python_file, "        cursors[id]['turtle'].color(color)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].penup()\n");
+    fprintf(python_file, "    cursors[id]['turtle'].goto(position)\n");
     fprintf(python_file, "    cursors[id]['turtle'].pendown()\n");
     fprintf(python_file, "    cursors[id]['turtle'].circle(radius, 180)\n");
     fprintf(python_file, "    cursors[id]['x'], cursors[id]['y'] = cursors[id]['turtle'].pos()\n");
     fprintf(python_file, "    cursors[id]['turtle'].penup()\n");
+    fprintf(python_file, "    cursors[id]['turtle'].left(180)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].goto(position)\n");
+    fprintf(python_file, "    shapes.append((id_form, id, cursors[id]['turtle'].pos(), radius, 'semi-circle'))\n");
+    fprintf(python_file, "    cursors[id]['turtle'].color(initial_color)\n");
 }
 void call_arc_func_py(const char *args, FILE *python_file) {
     char id[64];
-    int radius;
+    char radius[64];
+    char id_form[64];
 
     // Extraire les valeurs depuis la chaîne args
-    if (sscanf(args, "%63s %d", id, radius) != 2) {
+    if (sscanf(args, "%63s %63s %63s", id, radius, id_form) != 3) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
     }
 
-    printf("Parsed values - id: %s, radius : %d", id, radius);
+    printf("Parsed values - id: %s, radius : %s, id_form: %s", id, radius, id_form);
 
     // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_semi_circle('%s', %d)\n", id, radius);
+    fprintf(python_file, "handle_square(%s, 'null', %s, %s)\n", id, radius, id_form);
 }
 
+
+
+
+void create_animation_func_py(FILE *python_file) {
+
+    printf("create_animation_func_py\n");
+
+    fprintf(python_file, "def animation(ids, move_distance, angle_degrees, show):\n");
+    fprintf(python_file, "    global animation_shapes\n");
+    fprintf(python_file, "    global shapes\n");
+    fprintf(python_file, "    final_animation = []\n");
+    fprintf(python_file, "    angle_radians = math.radians(angle_degrees)\n");
+    fprintf(python_file, "    dx = move_distance * math.cos(angle_radians)\n");
+    fprintf(python_file, "    dy = move_distance * math.sin(angle_radians)\n");
+    fprintf(python_file, "    for shape in shapes[:]:  # On parcourt une copie de la liste shapes\n");
+    fprintf(python_file, "        if shape[1] in ids:  # Si l'id est dans la liste d'animation\n");
+    fprintf(python_file, "            animation_shapes.append(shape)\n");
+    fprintf(python_file, "            shapes.remove(shape)  # Retirer l'élément de shapes\n");
+    fprintf(python_file, "    if (show):\n");
+    fprintf(python_file, "        for shape in animation_shapes:\n");
+    fprintf(python_file, "            if shape[1] in ids:\n");
+    fprintf(python_file, "                cursors[shape[1]]['turtle'].showturtle()\n");
+    fprintf(python_file, "    else:\n");
+    fprintf(python_file, "        for shape in animation_shapes:\n");
+    fprintf(python_file, "            if shape[1] in ids:\n");
+    fprintf(python_file, "                cursors[shape[1]]['turtle'].hideturtle()\n");
+    fprintf(python_file, "    for shape in animation_shapes[:]:\n");
+    fprintf(python_file, "        if shape[1] in ids:  # Si l'id est dans la liste d'animation\n");
+    fprintf(python_file, "            if shape[4] == 'circle':\n");
+    fprintf(python_file, "                new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
+    fprintf(python_file, "                handle_circle(shape[1], shape[2], shape[3], shape[0], 'white')  # Effacer le cercle en blanc\n");
+    fprintf(python_file, "                shapes.pop()\n");
+    fprintf(python_file, "                handle_circle(shape[1], new_position, shape[3], shape[0], 'null')\n");
+    fprintf(python_file, "                final_animation.append(shapes.pop())\n");
+    fprintf(python_file, "            elif shape[4] == 'line':\n");
+    fprintf(python_file, "                new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
+    fprintf(python_file, "                handle_line(shape[1], shape[2], shape[3], shape[0], 'white')  # Effacer le carré en blanc\n");
+    fprintf(python_file, "                shapes.pop()\n");
+    fprintf(python_file, "                handle_line(shape[1], new_position, shape[3], shape[0], 'null')\n");
+    fprintf(python_file, "                final_animation.append(shapes.pop())\n");
+    fprintf(python_file, "            elif shape[4] == 'square':\n");
+    fprintf(python_file, "                new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
+    fprintf(python_file, "                handle_square(shape[1], shape[2], shape[3], shape[0], 'white')  # Effacer le carré en blanc\n");
+    fprintf(python_file, "                shapes.pop()\n");
+    fprintf(python_file, "                handle_square(shape[1], new_position, shape[3], shape[0], 'null')\n");
+    fprintf(python_file, "                final_animation.append(shapes.pop())\n");
+    fprintf(python_file, "            elif shape[4] == 'semi-circle':\n");
+    fprintf(python_file, "                new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
+    fprintf(python_file, "                handle_semi_circle(shape[1], shape[2], shape[3], shape[0], 'white')  # Effacer le carré en blanc\n");
+    fprintf(python_file, "                shapes.pop()\n");
+    fprintf(python_file, "                handle_semi_circle(shape[1], new_position, shape[3], shape[0], 'null')\n");
+    fprintf(python_file, "                final_animation.append(shapes.pop())\n");
+    fprintf(python_file, "            elif shape[4] == 'point':\n");
+    fprintf(python_file, "                new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
+    fprintf(python_file, "                handle_point(shape[1], shape[2], shape[0], 'white')  # Effacer le carré en blanc\n");
+    fprintf(python_file, "                shapes.pop()\n");
+    fprintf(python_file, "                handle_point(shape[1], new_position, shape[0], 'null')\n");
+    fprintf(python_file, "                final_animation.append(shapes.pop())\n");
+    fprintf(python_file, "    # Redessiner les formes restantes de shapes qui ne sont pas animées\n");
+    fprintf(python_file, "    for shape in shapes:\n");
+    fprintf(python_file, "        if shape[4] == 'circle':\n");
+    fprintf(python_file, "            shapes.remove(shape)\n");
+    fprintf(python_file, "            handle_circle(shape[1], shape[2], shape[3])  # Redessiner le cercle\n");
+    fprintf(python_file, "        elif shape[4] == 'line':\n");
+    fprintf(python_file, "            shapes.remove(shape)\n");
+    fprintf(python_file, "            handle_line(shape[1], shape[2], shape[3])  # Redessiner le carré\n");
+    fprintf(python_file, "        elif shape[4] == 'square':\n");
+    fprintf(python_file, "            shapes.remove(shape)\n");
+    fprintf(python_file, "            handle_line(shape[1], shape[2], shape[3])  # Redessiner le carré\n");
+    fprintf(python_file, "        elif shape[4] == 'semi-circle':\n");
+    fprintf(python_file, "            shapes.remove(shape)\n");
+    fprintf(python_file, "            handle_semi_circle(shape[1], shape[2], shape[3])  # Redessiner le carré\n");
+    fprintf(python_file, "        elif shape[4] == 'point':\n");
+    fprintf(python_file, "            shapes.remove(shape)\n");
+    fprintf(python_file, "            handle_point(shape[1], shape[2], shape[3])  # Redessiner le carré\n");
+    fprintf(python_file, "    shapes.extend(final_animation)\n");
+    fprintf(python_file, "    animation_shapes = []  # Reset animation list after the animation is done\n");
+}
+void call_animation_func_py(const char *args, FILE *python_file) {
+    char ids[64];
+    char move_distance[64];
+    char move_r[64];
+    char angle_degrees[64];
+
+    // Extraire les valeurs depuis la chaîne args
+    if (sscanf(args, "%63s %63s %63s %63s", ids, move_distance, move_r, angle_degrees) != 4) {
+        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
+        return;
+    }
+
+    printf("Parsed values - ids: %s, move_distance : %s, move_r : %s, angle_degrees : %s", ids, move_distance, move_r, angle_degrees);
+
+    // faire un appel dans python à la fonction qui gère les curseurs
+    fprintf(python_file, "set_all_cursors_speed(0)\n");
+    fprintf(python_file, "turtle.tracer(n=1, delay=0)\n");
+    fprintf(python_file, "for i in range(%s):\n", move_r);
+    fprintf(python_file, "    time.sleep(0.1)\n");
+    fprintf(python_file, "    if (i == %s - 1):\n", move_r);
+    fprintf(python_file, "        show = True\n");
+    fprintf(python_file, "    else:\n");
+    fprintf(python_file, "        show = False\n");
+    fprintf(python_file, "    animation(%s, %s, %s, show)\n", ids, move_distance, angle_degrees);
+    fprintf(python_file, "turtle.tracer(n=1, delay=10)\n");
+    fprintf(python_file, "set_all_cursors_speed(1)\n");
+}
 
 
 void handle_if_python(const char *args, FILE *python_file) {
@@ -469,7 +669,6 @@ void handle_if_python(const char *args, FILE *python_file) {
 
     // Afficher les arguments nettoyés pour débogage
     printf("Arguments nettoyés : '%s'\n", clean_args);
-
 
     // Localiser l'ID du curseur
     char *cursor_start = strstr(clean_args, "CURSOR WITH ID = ");
@@ -509,7 +708,7 @@ void handle_if_python(const char *args, FILE *python_file) {
         }
     }
     // Afficher les résultats pour débogage
-    printf("ID du curseur : '%s'\n", cursor_id);
+    printf("ID du curseur : %s\n", cursor_id);
     printf("Condition X : '%s'\n", x_condition);
     printf("Condition Y : '%s'\n", y_condition);
     printf("Bloc IF : '%s'\n", if_block);
@@ -519,25 +718,72 @@ void handle_if_python(const char *args, FILE *python_file) {
     fprintf(python_file, "if ");
     if (strlen(x_condition) > 0 && strlen(y_condition) > 0) {
         // Conditions sur X et Y
-        fprintf(python_file, "cursors['%s']['x'] %s and cursors[%s]['y'] %s:\n",
+        fprintf(python_file, "cursors[%s]['x'] %s and cursors[%s]['y'] %s:\n",
                 cursor_id, x_condition, cursor_id, y_condition);
     } else if (strlen(x_condition) > 0) {
         // Condition sur X uniquement
-        fprintf(python_file, "cursors['%s']['x'] %s:\n", cursor_id, x_condition);
+        fprintf(python_file, "cursors[%s]['x'] %s:\n", cursor_id, x_condition);
     } else if (strlen(y_condition) > 0) {
         // Condition sur Y uniquement
-        fprintf(python_file, "cursors['%s']['y'] %s:\n", cursor_id, y_condition);
+        fprintf(python_file, "cursors[%s]['y'] %s:\n", cursor_id, y_condition);
     }
 
+    // Traiter chaque commande du bloc IF avec indentation
+    char *command_start = if_block;
+    while (*command_start != '\0') {
+        // Localiser la fin de la commande (virgule ou fin du bloc)
+        char *command_end = strchr(command_start, ',');
+        if (!command_end) command_end = command_start + strlen(command_start);
 
-    fprintf(python_file, "    ");
-    execute_command(if_block, python_file);
+        // Extraire la commande
+        char command[256] = "";
+        strncpy(command, command_start, command_end - command_start);
+        command[command_end - command_start] = '\0';
+
+        // Supprimer les espaces en début et fin de commande
+        char *trimmed_command = command;
+        while (*trimmed_command == ' ') trimmed_command++;
+        char *end_trim = trimmed_command + strlen(trimmed_command) - 1;
+        while (end_trim > trimmed_command && *end_trim == ' ') *end_trim-- = '\0';
+
+        // Ajouter l'indentation avant d'appeler execute_command
+        fprintf(python_file, "    ");
+        execute_command(trimmed_command, python_file);
+
+        // Passer à la commande suivante
+        if (*command_end == ',') command_start = command_end + 1;
+        else break;
+    }
 
     // Compiler et écrire le bloc ELSE
     fprintf(python_file, "else:\n");
-    fprintf(python_file, "    ");
-    execute_command(else_block, python_file);
+    command_start = else_block;
+    while (*command_start != '\0') {
+        // Localiser la fin de la commande (virgule ou fin du bloc)
+        char *command_end = strchr(command_start, ',');
+        if (!command_end) command_end = command_start + strlen(command_start);
+
+        // Extraire la commande
+        char command[256] = "";
+        strncpy(command, command_start, command_end - command_start);
+        command[command_end - command_start] = '\0';
+
+        // Supprimer les espaces en début et fin de commande
+        char *trimmed_command = command;
+        while (*trimmed_command == ' ') trimmed_command++;
+        char *end_trim = trimmed_command + strlen(trimmed_command) - 1;
+        while (end_trim > trimmed_command && *end_trim == ' ') *end_trim-- = '\0';
+
+        // Ajouter l'indentation avant d'appeler execute_command
+        fprintf(python_file, "    ");
+        execute_command(trimmed_command, python_file);
+
+        // Passer à la commande suivante
+        if (*command_end == ',') command_start = command_end + 1;
+        else break;
+    }
 }
+
 
 void handle_for_python(const char *args, FILE *python_file) {
     char clean_args[512] = "";
@@ -597,64 +843,176 @@ void handle_for_python(const char *args, FILE *python_file) {
     printf("Expression de range/liste : '%s'\n", range_expr);
     printf("Bloc de la boucle : '%s'\n", loop_block);
 
-    // Vérifier si les éléments nécessaires sont présents
-    if (strlen(loop_var) > 0 && strlen(range_expr) > 0 && strlen(loop_block) > 0) {
-        // Générer le code Python
-        fprintf(python_file, "for %s in range(%s):\n", loop_var, range_expr);
+
+    fprintf(python_file, "for %s in range(%s):\n", loop_var, range_expr);
+
+
+    // Traiter chaque commande du bloc avec indentation
+    char *command_start = loop_block;
+    while (*command_start != '\0') {
+        // Localiser la fin de la commande (virgule ou fin du bloc)
+        char *command_end = strchr(command_start, ',');
+        if (!command_end) command_end = command_start + strlen(command_start);
+
+        // Extraire la commande
+        char command[256] = "";
+        strncpy(command, command_start, command_end - command_start);
+        command[command_end - command_start] = '\0';
+
+        // Supprimer les espaces en début et fin de commande
+        char *trimmed_command = command;
+        while (*trimmed_command == ' ') trimmed_command++;
+        char *end_trim = trimmed_command + strlen(trimmed_command) - 1;
+        while (end_trim > trimmed_command && *end_trim == ' ') *end_trim-- = '\0';
+
+        // Ajouter l'indentation avant d'appeler execute_command
         fprintf(python_file, "    ");
-        execute_command(loop_block, python_file);
-    } else {
-        fprintf(stderr, "Erreur : commande invalide ou mal formatée\n");
+        execute_command(trimmed_command, python_file);
+
+        // Passer à la commande suivante
+        if (*command_end == ',') command_start = command_end + 1;
+        else break;
     }
 }
 
 
 
+void handle_set_variable(const char *args, FILE *python_file) {
+    char variable_name[64];
+    char expression[256];
+
+    // Extraction de la commande
+    int result = sscanf(args, "VARIABLE %63s = %255[^\n]", variable_name, expression);
+    if (result != 2) {
+        fprintf(stderr, "Erreur : commande VARIABLE mal formatée.\n");
+        fprintf(stderr, "Commande reçue : '%s'\n", args);
+        fprintf(stderr, "Résultat sscanf : %d\n", result);
+        return;
+    }
+
+    printf("Variable : '%s', Expression : '%s'\n", variable_name, expression);
+
+    // Vérification du nom de la variable
+    for (char *c = variable_name; *c; ++c) {
+        if (!((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z') || (*c == '_') || (*c >= '0' && *c <= '9' && c != variable_name))) {
+            fprintf(stderr, "Erreur : nom de variable invalide '%s'.\n", variable_name);
+            return;
+        }
+    }
+
+    // Vérification de l'expression
+    if (strlen(expression) == 0) {
+        fprintf(stderr, "Erreur : expression vide pour la variable '%s'.\n", variable_name);
+        return;
+    }
+
+    // Écriture de la commande dans le fichier Python
+    fprintf(python_file, "%s = %s\n", variable_name, expression);
+    fflush(python_file); // Assurer que les données sont écrites immédiatement
+}
+
+void handle_while_python(const char *args, FILE *python_file) {
+    char clean_args[1024];
+    char cursor_id[64] = "";
+    char x_condition[64] = "";
+    char y_condition[64] = "";
+    char loop_block[512] = "";
+
+    // Nettoyer les espaces superflus
+    int i = 0, j = 0;
+    while (args[i] != '\0') {
+        if (!(args[i] == ' ' && args[i + 1] == ' ')) {
+            clean_args[j++] = args[i];
+        }
+        i++;
+    }
+    clean_args[j] = '\0';
+
+    // Localiser l'ID du curseur
+    char *cursor_start = strstr(clean_args, "CURSOR WITH ID = ");
+    if (cursor_start) {
+        cursor_start += strlen("CURSOR WITH ID = ");
+        sscanf(cursor_start, "%63s", cursor_id);
+    }
+
+    // Localiser la condition X
+    char *x_start = strstr(clean_args, "X ");
+    if (x_start) {
+        x_start += 2; // Sauter "X "
+        sscanf(x_start, "%63[^A{]", x_condition); // Capturer toute la condition jusqu'à '{' ou 'A'
+    }
+
+    // Localiser la condition Y
+    char *y_start = strstr(clean_args, "Y ");
+    if (y_start) {
+        y_start += 2; // Sauter "Y "
+        sscanf(y_start, "%63[^A{]", y_condition); // Capturer toute la condition jusqu'à '{' ou 'A'
+    }
+
+    // Localiser le bloc while
+    char *block_start = strchr(clean_args, '{');
+    char *block_end = strchr(clean_args, '}');
+    if (block_start && block_end && block_end > block_start) {
+        strncpy(loop_block, block_start + 1, block_end - block_start - 1);
+        loop_block[block_end - block_start - 1] = '\0';
+    } else {
+        fprintf(stderr, "Erreur : bloc d'instructions mal formaté\n");
+        return;
+    }
 
 
+    // Générer la condition Python
+    fprintf(python_file, "while ");
+    if (strlen(x_condition) > 0 && strlen(y_condition) > 0) {
+        // Conditions sur X et Y
+        fprintf(python_file, "cursors[%s]['x'] %s and cursors[%s]['y'] %s:\n",
+                cursor_id, x_condition, cursor_id, y_condition);
+    } else if (strlen(x_condition) > 0) {
+        // Condition sur X uniquement
+        fprintf(python_file, "cursors[%s]['x'] %s:\n", cursor_id, x_condition);
+    } else if (strlen(y_condition) > 0) {
+        // Condition sur Y uniquement
+        fprintf(python_file, "cursors[%s]['y'] %s:\n", cursor_id, y_condition);
+    } else {
+        fprintf(stderr, "Erreur : aucune condition valide trouvée\n");
+        return;
+    }
 
+    // Traiter chaque commande du bloc avec indentation
+    char *command_start = loop_block;
+    while (*command_start != '\0') {
+        // Localiser la fin de la commande (virgule ou fin du bloc)
+        char *command_end = strchr(command_start, ',');
+        if (!command_end) command_end = command_start + strlen(command_start);
 
+        // Extraire la commande
+        char command[256] = "";
+        strncpy(command, command_start, command_end - command_start);
+        command[command_end - command_start] = '\0';
 
+        // Supprimer les espaces en début et fin de commande
+        char *trimmed_command = command;
+        while (*trimmed_command == ' ') trimmed_command++;
+        char *end_trim = trimmed_command + strlen(trimmed_command) - 1;
+        while (end_trim > trimmed_command && *end_trim == ' ') *end_trim-- = '\0';
 
+        // Ajouter l'indentation avant d'appeler execute_command
+        fprintf(python_file, "    ");
+        execute_command(trimmed_command, python_file);
 
-// void handle_set_variable(const char *command, FILE *python_file) {
-//     char variable_name[64];
-//     char expression[256];
-//
-//     // Extraction de la commande
-//     int result = sscanf(command, "VARIABLE %63s = %255[^\n]", variable_name, expression);
-//     if (result != 2) {
-//         fprintf(stderr, "Erreur : commande VARIABLE mal formatée.\n");
-//         fprintf(stderr, "Commande reçue : '%s'\n", command);
-//         fprintf(stderr, "Résultat sscanf : %d\n", result);
-//         return;
-//     }
-//
-//     printf("Variable : '%s', Expression : '%s'\n", variable_name, expression);
-//
-//     // Gérer les variables en C
-//     set_variable_in_c(variable_name, expression);
-//
-//     // Écrire dans le fichier Python via le module dédié
-//     write_variable_to_python(python_file, variable_name, expression);
-// }
-//
+        // Passer à la commande suivante
+        if (*command_end == ',') command_start = command_end + 1;
+        else break;
+    }
+}
 
+void handle_break_python(const char *args, FILE *python_file) {
+    fprintf(python_file, "break\n");
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void handle_continue_python(const char *args, FILE *python_file) {
+    fprintf(python_file, "continue\n");
+}
+void handle_end_python(const char *args, FILE *python_file) {
+    fprintf(python_file, "pass\n");
+}

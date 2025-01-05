@@ -26,6 +26,7 @@ void create_circle_func_py(FILE *python_file);
 void create_square_func_py( FILE *python_file);
 void create_point_func_py( FILE *python_file);
 void create_arc_func_py( FILE *python_file);
+void create_animation_func_py( FILE *python_file);
 
 void call_cursor_func_py(const char *args, FILE *python_file);
 void call_color_func_py(const char *args, FILE *python_file);
@@ -37,11 +38,17 @@ void call_square_func_py(const char *args, FILE *python_file);
 void call_point_func_py(const char *args, FILE *python_file);
 void call_arc_func_py(const char *args, FILE *python_file);
 void call_thickness_func_py(const char *args, FILE *python_file);
+void call_animation_func_py(const char *args, FILE *python_file);
 
+
+void handle_while_python(const char *args, FILE *python_file);
+void handle_set_variable(const char *args, FILE *python_file);
 void handle_if_python(const char *args, FILE *python_file);
 void handle_for_python(const char *args, FILE *python_file);
+void handle_break_python(const char *args, FILE *python_file);
+void handle_continue_python(const char *args, FILE *python_file);
+void handle_end_python(const char *args, FILE *python_file);
 
 extern Command commands[];
 
 #endif // COMMANDS_H
-

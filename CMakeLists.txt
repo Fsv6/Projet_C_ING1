@@ -12,7 +12,5 @@ add_executable(Projet_C_ING1
     axes_generator.c
         cursor_manager.c
         commands.c
-        figure_manager.c
         parser.c
-        variable.c
 )
