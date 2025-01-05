@@ -3,25 +3,44 @@
 
 #include <stdio.h>
 
-// Définition de la structure Command
 typedef struct {
     const char *name;
-    void (*execute)(const char *args, FILE *python_file);
+    void (*compile)(const char *args, FILE *python_file);
+    void (*create)(FILE *python_file);
 } Command;
 
-// Prototypes des fonctions
-void handle_cursor(const char *args, FILE *python_file);
-void handle_color(const char *args, FILE *python_file);
-void handle_thickness(const char *args, FILE *python_file);
-void handle_move(const char *args, FILE *python_file);
-void handle_rotate(const char *args, FILE *python_file);
-void handle_line(const char *args, FILE *python_file);
-void handle_circle(const char *args, FILE *python_file);
-void handle_square(const char *args, FILE *python_file);
-void handle_point(const char *args, FILE *python_file);
-void handle_arc(const char *args, FILE *python_file);
+const char** get_command_names(Command commands[], int* count);
 
-// Déclaration du tableau de commandes
+
+
+void set_python_file(FILE *python_file);
+void end_python_file(FILE *python_file);
+// Prototypes des fonctions
+void create_cursor_func_py(FILE *python_file);
+void create_color_func_py(FILE *python_file);
+void create_thickness_func_py( FILE *python_file);
+void create_move_func_py(FILE *python_file);
+void create_rotate_func_py(FILE *python_file);
+void create_line_func_py( FILE *python_file);
+void create_circle_func_py(FILE *python_file);
+void create_square_func_py( FILE *python_file);
+void create_point_func_py( FILE *python_file);
+void create_arc_func_py( FILE *python_file);
+
+void call_cursor_func_py(const char *args, FILE *python_file);
+void call_color_func_py(const char *args, FILE *python_file);
+void call_move_func_py(const char *args, FILE *python_file);
+void call_rotate_func_py(const char *args, FILE *python_file);
+void call_line_func_py(const char *args, FILE *python_file);
+void call_circle_func_py(const char *args, FILE *python_file);
+void call_square_func_py(const char *args, FILE *python_file);
+void call_point_func_py(const char *args, FILE *python_file);
+void call_arc_func_py(const char *args, FILE *python_file);
+void call_thickness_func_py(const char *args, FILE *python_file);
+
+void handle_if_python(const char *args, FILE *python_file);
+void handle_for_python(const char *args, FILE *python_file);
+
 extern Command commands[];
 
 #endif // COMMANDS_H

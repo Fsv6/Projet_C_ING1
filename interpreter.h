@@ -1,13 +1,15 @@
 
 #ifndef INTERPRETER_H
 #define INTERPRETER_H
+#include <stdbool.h>
 
+void process_command(FILE *draw_file, FILE *python_file);
 void interpret_draw_file(const char *draw_filename, const char *output_python_filename);
-void process_command(const char *command, FILE *python_file);
-void handle_thickness(const char *args, FILE *python_file);
-void handle_color(const char *args, FILE *python_file);
-void handle_cursor(const char *args, FILE *python_file);
-void handle_rotate(const char *args, FILE *python_file);
-void handle_move(const char *args, FILE *python_file);
+bool is_in_list(const char *word, const char **list, int list_size);
+void execute_command(const char *line, FILE *python_file);
+void finalize_execution(FILE *draw_file,  FILE *python_file, const char *output_python_filename);
+
+
+
 
 #endif //INTERPRETER_H
