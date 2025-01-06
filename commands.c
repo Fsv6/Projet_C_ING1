@@ -27,6 +27,7 @@ Command commands[] = {
     {"LINE", call_line_func_py, create_line_func_py},
     {"CIRCLE", call_circle_func_py, create_circle_func_py},
     {"SQUARE", call_square_func_py, create_square_func_py},
+    {"RECTANGLE", call_rectangle_func_py, call_rectangle_func_py},
     {"POINT", call_point_func_py, create_point_func_py},
     {"ARC", call_arc_func_py, create_arc_func_py},
     {"ANIME", call_animation_func_py, create_animation_func_py},
@@ -449,6 +450,52 @@ void call_square_func_py(const char *args, FILE *python_file) {
 
     // faire un appel dans python à la fonction qui gère les curseurs
     fprintf(python_file, "handle_square(%s, 'null', %s, %s)\n", id, side_length, id_form);
+}
+
+
+
+
+
+
+void create_rectangle_func_py(FILE *python_file) {
+    fprintf(python_file, "def handle_rectangle(id, position, side_1, side_2, id_form, color='null'):\n");
+    fprintf(python_file, "    if position == 'null':\n");
+    fprintf(python_file, "        position = cursors[id]['turtle'].pos()\n");
+    fprintf(python_file, "    initial_color = cursors[id]['turtle'].pencolor()\n");
+    fprintf(python_file, "    if color != 'null':\n");
+    fprintf(python_file, "        cursors[id]['turtle'].color(color)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].penup()\n");
+    fprintf(python_file, "    cursors[id]['turtle'].goto(position)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].pendown()\n");
+    fprintf(python_file, "    cursors[id]['turtle'].forward(side_1)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].left(90)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].forward(side_2)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].left(90)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].forward(side_1)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].left(90)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].forward(side_2)\n");
+    fprintf(python_file, "    cursors[id]['turtle'].left(90)\n");
+    fprintf(python_file, "    cursors[id]['x'], cursors[id]['y'] = cursors[id]['turtle'].pos()\n");
+    fprintf(python_file, "    cursors[id]['turtle'].penup()\n");
+    fprintf(python_file, "    shapes.append((id_form, id, cursors[id]['turtle'].pos(), side_length, 'square'))\n");
+    fprintf(python_file, "    cursors[id]['turtle'].color(initial_color)\n");
+}
+void call_rectangle_func_py(const char *args, FILE *python_file) {
+    char id[64];
+    char side_1[64];
+    char side_2[64];
+    char id_form[64];
+
+    // Extraire les valeurs depuis la chaîne args
+    if (sscanf(args, "%63s %63s %63s %63s", id, side_1, side_2, id_form) != 4) {
+        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
+        return;
+    }
+
+    printf("Parsed values - id: %s, side_1 : %s, side_2 : %s, id_form: %s", id, side_1, side_2, id_form);
+
+    // faire un appel dans python à la fonction qui gère les curseurs
+    fprintf(python_file, "handle_rectangle(%s, 'null', %s, %s, %s)\n", id, side_1, side_2, id_form);
 }
 
 
