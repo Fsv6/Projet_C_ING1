@@ -27,10 +27,11 @@ Command commands[] = {
     {"LINE", call_line_func_py, create_line_func_py},
     {"CIRCLE", call_circle_func_py, create_circle_func_py},
     {"SQUARE", call_square_func_py, create_square_func_py},
-    {"RECTANGLE", call_rectangle_func_py, call_rectangle_func_py},
+    {"RECTANGLE", call_rectangle_func_py, create_rectangle_func_py},
     {"POINT", call_point_func_py, create_point_func_py},
     {"ARC", call_arc_func_py, create_arc_func_py},
     {"ANIME", call_animation_func_py, create_animation_func_py},
+    {"GOTO", call_goto_func_py, create_goto_func_py},
     {"IF",handle_if_python , NULL},
     {"FOR", handle_for_python, NULL},
     {"SET", handle_set_variable, NULL},
@@ -477,7 +478,7 @@ void create_rectangle_func_py(FILE *python_file) {
     fprintf(python_file, "    cursors[id]['turtle'].left(90)\n");
     fprintf(python_file, "    cursors[id]['x'], cursors[id]['y'] = cursors[id]['turtle'].pos()\n");
     fprintf(python_file, "    cursors[id]['turtle'].penup()\n");
-    fprintf(python_file, "    shapes.append((id_form, id, cursors[id]['turtle'].pos(), side_length, 'square'))\n");
+    fprintf(python_file, "    shapes.append((id_form, id, cursors[id]['turtle'].pos(), side_length, 'rectangle'))\n");
     fprintf(python_file, "    cursors[id]['turtle'].color(initial_color)\n");
 }
 void call_rectangle_func_py(const char *args, FILE *python_file) {
@@ -594,8 +595,6 @@ void call_arc_func_py(const char *args, FILE *python_file) {
 
 void create_animation_func_py(FILE *python_file) {
 
-    printf("create_animation_func_py\n");
-
     fprintf(python_file, "def animation(ids, move_distance, angle_degrees, show):\n");
     fprintf(python_file, "    global animation_shapes\n");
     fprintf(python_file, "    global shapes\n");
@@ -604,7 +603,7 @@ void create_animation_func_py(FILE *python_file) {
     fprintf(python_file, "    dx = move_distance * math.cos(angle_radians)\n");
     fprintf(python_file, "    dy = move_distance * math.sin(angle_radians)\n");
     fprintf(python_file, "    for shape in shapes[:]:  # On parcourt une copie de la liste shapes\n");
-    fprintf(python_file, "        if shape[1] in ids:  # Si l'id est dans la liste d'animation\n");
+    fprintf(python_file, "        if shape[0] in ids:  # Si l'id est dans la liste d'animation\n");
     fprintf(python_file, "            animation_shapes.append(shape)\n");
     fprintf(python_file, "            shapes.remove(shape)  # Retirer l'élément de shapes\n");
     fprintf(python_file, "    if (show):\n");
@@ -616,7 +615,7 @@ void create_animation_func_py(FILE *python_file) {
     fprintf(python_file, "            if shape[1] in ids:\n");
     fprintf(python_file, "                cursors[shape[1]]['turtle'].hideturtle()\n");
     fprintf(python_file, "    for shape in animation_shapes[:]:\n");
-    fprintf(python_file, "        if shape[1] in ids:  # Si l'id est dans la liste d'animation\n");
+    fprintf(python_file, "        if shape[0] in ids:  # Si l'id est dans la liste d'animation\n");
     fprintf(python_file, "            if shape[4] == 'circle':\n");
     fprintf(python_file, "                new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
     fprintf(python_file, "                handle_circle(shape[1], shape[2], shape[3], shape[0], 'white')  # Effacer le cercle en blanc\n");
@@ -647,23 +646,32 @@ void create_animation_func_py(FILE *python_file) {
     fprintf(python_file, "                shapes.pop()\n");
     fprintf(python_file, "                handle_point(shape[1], new_position, shape[0], 'null')\n");
     fprintf(python_file, "                final_animation.append(shapes.pop())\n");
+    fprintf(python_file, "            elif shape[4] == 'rectangle':\n");
+    fprintf(python_file, "                new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
+    fprintf(python_file, "                handle_rectangle(shape[1], shape[2], shape[3], shape[4], shape[0], 'white')  # Effacer le carré en blanc\n");
+    fprintf(python_file, "                shapes.pop()\n");
+    fprintf(python_file, "                handle_point(shape[1], new_position, shape[3], shape[4], shape[0], 'null')\n");
+    fprintf(python_file, "                final_animation.append(shapes.pop())\n");
     fprintf(python_file, "    # Redessiner les formes restantes de shapes qui ne sont pas animées\n");
     fprintf(python_file, "    for shape in shapes:\n");
     fprintf(python_file, "        if shape[4] == 'circle':\n");
     fprintf(python_file, "            shapes.remove(shape)\n");
-    fprintf(python_file, "            handle_circle(shape[1], shape[2], shape[3])  # Redessiner le cercle\n");
+    fprintf(python_file, "            handle_circle(shape[1], shape[2], shape[3], shape[0])  # Redessiner le cercle\n");
     fprintf(python_file, "        elif shape[4] == 'line':\n");
     fprintf(python_file, "            shapes.remove(shape)\n");
-    fprintf(python_file, "            handle_line(shape[1], shape[2], shape[3])  # Redessiner le carré\n");
+    fprintf(python_file, "            handle_line(shape[1], shape[2], shape[3], shape[0])  # Redessiner le carré\n");
     fprintf(python_file, "        elif shape[4] == 'square':\n");
     fprintf(python_file, "            shapes.remove(shape)\n");
-    fprintf(python_file, "            handle_line(shape[1], shape[2], shape[3])  # Redessiner le carré\n");
+    fprintf(python_file, "            handle_line(shape[1], shape[2], shape[3], shape[0])  # Redessiner le carré\n");
     fprintf(python_file, "        elif shape[4] == 'semi-circle':\n");
     fprintf(python_file, "            shapes.remove(shape)\n");
-    fprintf(python_file, "            handle_semi_circle(shape[1], shape[2], shape[3])  # Redessiner le carré\n");
+    fprintf(python_file, "            handle_semi_circle(shape[1], shape[2], shape[3], shape[0])  # Redessiner le carré\n");
     fprintf(python_file, "        elif shape[4] == 'point':\n");
     fprintf(python_file, "            shapes.remove(shape)\n");
-    fprintf(python_file, "            handle_point(shape[1], shape[2], shape[3])  # Redessiner le carré\n");
+    fprintf(python_file, "            handle_point(shape[1], shape[2], shape[0])  # Redessiner le carré\n");
+    fprintf(python_file, "        elif shape[4] == 'rectangle':\n");
+    fprintf(python_file, "            shapes.remove(shape)\n");
+    fprintf(python_file, "            handle_rectangle(shape[1], shape[2], shape[3], shape[4], shape[0])  # Redessiner le carré\n");
     fprintf(python_file, "    shapes.extend(final_animation)\n");
     fprintf(python_file, "    animation_shapes = []  # Reset animation list after the animation is done\n");
 }
@@ -683,7 +691,7 @@ void call_animation_func_py(const char *args, FILE *python_file) {
 
     // faire un appel dans python à la fonction qui gère les curseurs
     fprintf(python_file, "set_all_cursors_speed(0)\n");
-    fprintf(python_file, "turtle.tracer(n=1, delay=0)\n");
+    fprintf(python_file, "turtle.tracer(n=10, delay=0)\n");
     fprintf(python_file, "for i in range(%s):\n", move_r);
     fprintf(python_file, "    time.sleep(0.1)\n");
     fprintf(python_file, "    if (i == %s - 1):\n", move_r);

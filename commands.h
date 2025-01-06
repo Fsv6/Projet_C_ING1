@@ -28,6 +28,7 @@ void create_rectangle_func_py( FILE *python_file);
 void create_point_func_py( FILE *python_file);
 void create_arc_func_py( FILE *python_file);
 void create_animation_func_py( FILE *python_file);
+void create_goto_func_py( FILE *python_file);
 
 void call_cursor_func_py(const char *args, FILE *python_file);
 void call_color_func_py(const char *args, FILE *python_file);
@@ -41,6 +42,7 @@ void call_point_func_py(const char *args, FILE *python_file);
 void call_arc_func_py(const char *args, FILE *python_file);
 void call_thickness_func_py(const char *args, FILE *python_file);
 void call_animation_func_py(const char *args, FILE *python_file);
+void call_goto_func_py(const char *args, FILE *python_file);
 
 
 void handle_while_python(const char *args, FILE *python_file);
