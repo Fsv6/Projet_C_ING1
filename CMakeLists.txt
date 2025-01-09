@@ -6,11 +6,11 @@ set(CMAKE_C_STANDARD 11)
 include_directories(.)
 
 add_executable(Projet_C_ING1
-    interpreter.c
-    interpreter.h
+    commands_parser.c
+    commands_parser.h
     main.c
     axes_generator.c
-        cursor_manager.c
-        commands.c
-        parser.c
+        commands_manager/commands.c
+        commands_manager/python_functions_writer.c
+        commands_manager/bloc_commands_manager.c
 )

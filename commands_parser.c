@@ -1,10 +1,10 @@
+#include <python_functions_writer.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include "commands.h"
 #include "axes_generator.h"
-#include "cursor_manager.h"
 
 
 // Taille maximale pour une ligne du fichier
@@ -20,9 +20,6 @@ void finalize_execution(FILE *draw_file,  FILE *python_file, const char *output_
 
     fclose(draw_file);
     fclose(python_file);
-
-
-    free_cursors();
 
 
     char command[512];
@@ -46,7 +43,6 @@ void execute_command(const char *line, FILE *python_file) {
 
     printf("Commande : '%s', Arguments : '%s'\n", command_name, args);
 
-    // Parcourir les commandes disponibles pour trouver une correspondance
     for (int j = 0; commands[j].name != NULL; j++) {
         if (strcmp(commands[j].name, command_name) == 0) {
             commands[j].compile(args, python_file);
@@ -59,7 +55,7 @@ void execute_command(const char *line, FILE *python_file) {
 }
 
 
-void process_command(const char *draw_filename, FILE *python_file) {
+void delimit_commands(const char *draw_filename, FILE *python_file) {
     printf("Processing commands...\n");
 
     FILE *draw_file = fopen(draw_filename, "r");
@@ -193,7 +189,7 @@ bool is_in_list(const char *word, const char **list, int list_size) {
 
 
 // Fonction principale pour lire et interpréter le fichier .draw
-void interpret_draw_file(const char *draw_filename, const char *output_python_filename) {
+void draw_handler(const char *draw_filename, const char *output_python_filename) {
     FILE *draw_file = fopen(draw_filename, "r");
     if (draw_file == NULL) {
         printf("Error: Unable to open file %s.\n", draw_filename);
@@ -209,7 +205,7 @@ void interpret_draw_file(const char *draw_filename, const char *output_python_fi
 
     set_python_file(python_file);
 
-    const char *detected_keywords[MAX_KEYWORDS];
+    const char *detected_commands[MAX_KEYWORDS];
     int detected_count = 0;
 
     char line[MAX_LINE_LENGTH];
@@ -217,8 +213,8 @@ void interpret_draw_file(const char *draw_filename, const char *output_python_fi
         char *token = strtok(line, " \t\n");
         while (token != NULL) {
             for (int i = 0; commands[i].name != NULL; i++) {
-                if (strcmp(token, commands[i].name) == 0 && !is_in_list(token, detected_keywords, detected_count)) {
-                    detected_keywords[detected_count] = strdup(token);
+                if (strcmp(token, commands[i].name) == 0 && !is_in_list(token, detected_commands, detected_count)) {
+                    detected_commands[detected_count] = strdup(token);
                     detected_count++;
                     break;
                 }
@@ -231,7 +227,7 @@ void interpret_draw_file(const char *draw_filename, const char *output_python_fi
     for (int i = 0; i < detected_count; i++) {
         bool handler_found = false; // Pour vérifier si un gestionnaire a été trouvé
         for (int j = 0; commands[j].name != NULL; j++) {
-            if (strcmp(detected_keywords[i], commands[j].name) == 0) {
+            if (strcmp(detected_commands[i], commands[j].name) == 0) {
                 handler_found = true; // Marque qu'un gestionnaire a été trouvé
                 printf("Executing handler for keyword: %s\n", commands[j].name);
                 if (commands[j].create != NULL) {
@@ -243,18 +239,18 @@ void interpret_draw_file(const char *draw_filename, const char *output_python_fi
             }
         }
         if (!handler_found) {
-            printf("No handler found for keyword: %s\n", detected_keywords[i]);
+            printf("No handler found for keyword: %s\n", detected_commands[i]);
         }
     }
 
     // Libérer la mémoire allouée
     for (int i = 0; i < detected_count; i++) {
-        free((void *)detected_keywords[i]);
+        free((void *)detected_commands[i]);
     }
 
     fclose(draw_file);
 
-    process_command(draw_filename, python_file);
+    delimit_commands(draw_filename, python_file);
 
     finalize_execution(draw_file, python_file, output_python_filename);
 

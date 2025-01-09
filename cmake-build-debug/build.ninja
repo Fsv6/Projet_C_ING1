@@ -49,8 +49,8 @@ cmake_ninja_workdir = C$:/Users/franc/Documents/ING1/Projet_C_ING1/cmake-build-d
 
 build cmake_object_order_depends_target_Projet_C_ING1: phony || .
 
-build CMakeFiles/Projet_C_ING1.dir/interpreter.c.obj: C_COMPILER__Projet_C_ING1_unscanned_Debug C$:/Users/franc/Documents/ING1/Projet_C_ING1/interpreter.c || cmake_object_order_depends_target_Projet_C_ING1
-  DEP_FILE = CMakeFiles\Projet_C_ING1.dir\interpreter.c.obj.d
+build CMakeFiles/Projet_C_ING1.dir/commands_parser.c.obj: C_COMPILER__Projet_C_ING1_unscanned_Debug C$:/Users/franc/Documents/ING1/Projet_C_ING1/commands_parser.c || cmake_object_order_depends_target_Projet_C_ING1
+  DEP_FILE = CMakeFiles\Projet_C_ING1.dir\commands_parser.c.obj.d
   FLAGS = -g -std=gnu11 -fdiagnostics-color=always
   INCLUDES = -IC:/Users/franc/Documents/ING1/Projet_C_ING1/.
   OBJECT_DIR = CMakeFiles\Projet_C_ING1.dir
@@ -70,26 +70,26 @@ build CMakeFiles/Projet_C_ING1.dir/axes_generator.c.obj: C_COMPILER__Projet_C_IN
   OBJECT_DIR = CMakeFiles\Projet_C_ING1.dir
   OBJECT_FILE_DIR = CMakeFiles\Projet_C_ING1.dir
 
-build CMakeFiles/Projet_C_ING1.dir/cursor_manager.c.obj: C_COMPILER__Projet_C_ING1_unscanned_Debug C$:/Users/franc/Documents/ING1/Projet_C_ING1/cursor_manager.c || cmake_object_order_depends_target_Projet_C_ING1
-  DEP_FILE = CMakeFiles\Projet_C_ING1.dir\cursor_manager.c.obj.d
+build CMakeFiles/Projet_C_ING1.dir/commands_manager/commands.c.obj: C_COMPILER__Projet_C_ING1_unscanned_Debug C$:/Users/franc/Documents/ING1/Projet_C_ING1/commands_manager/commands.c || cmake_object_order_depends_target_Projet_C_ING1
+  DEP_FILE = CMakeFiles\Projet_C_ING1.dir\commands_manager\commands.c.obj.d
   FLAGS = -g -std=gnu11 -fdiagnostics-color=always
   INCLUDES = -IC:/Users/franc/Documents/ING1/Projet_C_ING1/.
   OBJECT_DIR = CMakeFiles\Projet_C_ING1.dir
-  OBJECT_FILE_DIR = CMakeFiles\Projet_C_ING1.dir
+  OBJECT_FILE_DIR = CMakeFiles\Projet_C_ING1.dir\commands_manager
 
-build CMakeFiles/Projet_C_ING1.dir/commands.c.obj: C_COMPILER__Projet_C_ING1_unscanned_Debug C$:/Users/franc/Documents/ING1/Projet_C_ING1/commands.c || cmake_object_order_depends_target_Projet_C_ING1
-  DEP_FILE = CMakeFiles\Projet_C_ING1.dir\commands.c.obj.d
+build CMakeFiles/Projet_C_ING1.dir/commands_manager/python_functions_writer.c.obj: C_COMPILER__Projet_C_ING1_unscanned_Debug C$:/Users/franc/Documents/ING1/Projet_C_ING1/commands_manager/python_functions_writer.c || cmake_object_order_depends_target_Projet_C_ING1
+  DEP_FILE = CMakeFiles\Projet_C_ING1.dir\commands_manager\python_functions_writer.c.obj.d
   FLAGS = -g -std=gnu11 -fdiagnostics-color=always
   INCLUDES = -IC:/Users/franc/Documents/ING1/Projet_C_ING1/.
   OBJECT_DIR = CMakeFiles\Projet_C_ING1.dir
-  OBJECT_FILE_DIR = CMakeFiles\Projet_C_ING1.dir
+  OBJECT_FILE_DIR = CMakeFiles\Projet_C_ING1.dir\commands_manager
 
-build CMakeFiles/Projet_C_ING1.dir/parser.c.obj: C_COMPILER__Projet_C_ING1_unscanned_Debug C$:/Users/franc/Documents/ING1/Projet_C_ING1/parser.c || cmake_object_order_depends_target_Projet_C_ING1
-  DEP_FILE = CMakeFiles\Projet_C_ING1.dir\parser.c.obj.d
+build CMakeFiles/Projet_C_ING1.dir/commands_manager/bloc_commands_manager.c.obj: C_COMPILER__Projet_C_ING1_unscanned_Debug C$:/Users/franc/Documents/ING1/Projet_C_ING1/commands_manager/bloc_commands_manager.c || cmake_object_order_depends_target_Projet_C_ING1
+  DEP_FILE = CMakeFiles\Projet_C_ING1.dir\commands_manager\bloc_commands_manager.c.obj.d
   FLAGS = -g -std=gnu11 -fdiagnostics-color=always
   INCLUDES = -IC:/Users/franc/Documents/ING1/Projet_C_ING1/.
   OBJECT_DIR = CMakeFiles\Projet_C_ING1.dir
-  OBJECT_FILE_DIR = CMakeFiles\Projet_C_ING1.dir
+  OBJECT_FILE_DIR = CMakeFiles\Projet_C_ING1.dir\commands_manager
 
 
 # =============================================================================
@@ -99,7 +99,7 @@ build CMakeFiles/Projet_C_ING1.dir/parser.c.obj: C_COMPILER__Projet_C_ING1_unsca
 #############################################
 # Link the executable Projet_C_ING1.exe
 
-build Projet_C_ING1.exe: C_EXECUTABLE_LINKER__Projet_C_ING1_Debug CMakeFiles/Projet_C_ING1.dir/interpreter.c.obj CMakeFiles/Projet_C_ING1.dir/main.c.obj CMakeFiles/Projet_C_ING1.dir/axes_generator.c.obj CMakeFiles/Projet_C_ING1.dir/cursor_manager.c.obj CMakeFiles/Projet_C_ING1.dir/commands.c.obj CMakeFiles/Projet_C_ING1.dir/parser.c.obj
+build Projet_C_ING1.exe: C_EXECUTABLE_LINKER__Projet_C_ING1_Debug CMakeFiles/Projet_C_ING1.dir/commands_parser.c.obj CMakeFiles/Projet_C_ING1.dir/main.c.obj CMakeFiles/Projet_C_ING1.dir/axes_generator.c.obj CMakeFiles/Projet_C_ING1.dir/commands_manager/commands.c.obj CMakeFiles/Projet_C_ING1.dir/commands_manager/python_functions_writer.c.obj CMakeFiles/Projet_C_ING1.dir/commands_manager/bloc_commands_manager.c.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\Projet_C_ING1.dir

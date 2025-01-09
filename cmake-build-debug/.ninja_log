@@ -1,15 +1,16 @@
 # ninja log v6
-144	257	7578159267248369	Projet_C_ING1.exe	ed222c406def551d
 34	183	7565885286049603	CMakeFiles/Projet_C_ING1.dir/axes_generator.c.obj	23c6f55ceb6bcba5
-9	133	7578112632773241	CMakeFiles/Projet_C_ING1.dir/main.c.obj	4e09b2654fe6b698
-4	139	7578112632707438	CMakeFiles/Projet_C_ING1.dir/interpreter.c.obj	2561f922b9dd5513
-4	144	7578159265836540	CMakeFiles/Projet_C_ING1.dir/commands.c.obj	ce34522ee33b5309
-5	838	7578160000120764	build.ninja	9cc2b0d176af76c6
+512	1160	7580713082078621	Projet_C_ING1.exe	e0a3e6b92a31f19d
+57	427	7580713077530838	CMakeFiles/Projet_C_ING1.dir/interpreter.c.obj	2561f922b9dd5513
+57	326	7580730787801342	CMakeFiles/Projet_C_ING1.dir/main.c.obj	4e09b2654fe6b698
+5	627	7580738074205387	build.ninja	9cc2b0d176af76c6
+82	512	7580713077776100	CMakeFiles/Projet_C_ING1.dir/commands.c.obj	ce34522ee33b5309
 115	357	7575191530409339	CMakeFiles/Projet_C_ING1.dir/cursor_manager.c.obj	64d05d9f699f085f
 24	246	7571709179530587	CMakeFiles/Projet_C_ING1.dir/figure_manager.c.obj	5b6675c503fc33d0
-19	117	7578112632873641	CMakeFiles/Projet_C_ING1.dir/parser.c.obj	e33b6c887f2a65e0
+93	404	7580713077881591	CMakeFiles/Projet_C_ING1.dir/parser.c.obj	e33b6c887f2a65e0
 159	472	7576422102971802	CMakeFiles/Projet_C_ING1.dir/variable.c.obj	a320fd5e57a2dfbc
 50	131	7576074433434029	CMakeFiles/Projet_C_ING1.dir/python_writer.c.obj	a3d953987aff2e3c
-3	543	7578160000120764	build.ninja	9cc2b0d176af76c6
-32	170	7578160001407712	CMakeFiles/Projet_C_ING1.dir/commands.c.obj	ce34522ee33b5309
-171	281	7578160002801925	Projet_C_ING1.exe	e0a3e6b92a31f19d
+77	328	7580730787990955	CMakeFiles/Projet_C_ING1.dir/commands_manager/python_functions_writer.c.obj	3ea251ed633336a0
+88	341	7580730788112155	CMakeFiles/Projet_C_ING1.dir/commands_manager/bloc_commands_manager.c.obj	98a3721952f54ac6
+10	270	7580731299814802	CMakeFiles/Projet_C_ING1.dir/commands_parser.c.obj	1e74874fbb24cfde
+23	312	7580730924135737	CMakeFiles/Projet_C_ING1.dir/commands_manager/commands.c.obj	3ec8745aa8b70ce6

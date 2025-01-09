@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-#include "interpreter.h"
+#include "commands_parser.h"
 #include "commands.h"
 
 void create_file();
 void open_file(const char *directory);
 void modify_file(const char *filepath, const char *filename);
-void execute_and_interpret();
+void compile();
 void display_colored_line(const char* line);
 
 int main() {
@@ -27,7 +27,7 @@ int main() {
         printf("\n=== MENU PRINCIPAL ===\n");
         printf("1. Creer un fichier .draw\n");
         printf("2. Ouvrir un fichier .draw\n");
-        printf("3. Executer un fichier\n");
+        printf("3. Compiler un fichier\n");
         printf("4. Quitter\n");
         printf("Entrez votre choix : ");
         scanf("%d", &choice);
@@ -41,7 +41,7 @@ int main() {
                 open_file(files_directory);
             break;
             case 3:
-                execute_and_interpret(files_directory);
+                compile(files_directory);
             break;
             case 4:
                 printf("Au revoir !\n");
@@ -254,7 +254,7 @@ void modify_file(const char *filepath, const char *filename) {
 
 
 
-void execute_and_interpret() {
+void compile() {
     char draw_filename[256];
     printf("Entrez le nom du fichier .draw a interpreter (sans extension) : ");
     scanf("%s", draw_filename);
@@ -266,7 +266,7 @@ void execute_and_interpret() {
 
     snprintf(python_filepath, sizeof(python_filepath), "../py_files_directory/%s.py", draw_filename);
 
-    interpret_draw_file(draw_filepath, python_filepath);
+    draw_handler(draw_filepath, python_filepath);
 
 
     printf("Le fichier Python correspondant a ete genere : %s\n", python_filepath);
