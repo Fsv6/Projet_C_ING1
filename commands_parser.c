@@ -38,13 +38,15 @@ void finalize_execution(FILE *draw_file, FILE *python_file, const char *output_p
 // - command: Command from the .draw file
 // - python_file: Pointer to the Python file being generated
 void execute_command(const char *command, FILE *python_file) {
-    char command_name[64], args[192];
+    char command_name[64], args[512];
 
     // Parse the command name and arguments from the line
-    if (sscanf(command, "%63s %191[^]", command_name, args) < 1) {
+    if (sscanf(command, "%63s %512[^\n]", command_name, args) < 1) {
         printf("Invalid or empty command: '%s'\n", command);
         return;
     }
+
+    printf("Executing command: %s\n", args);
 
     // Match the command name to a known command and execute its associated function
     for (int j = 0; commands[j].name != NULL; j++) {
@@ -62,7 +64,6 @@ void execute_command(const char *command, FILE *python_file) {
 // - draw_filename: Name of the .draw file
 // - python_file: Pointer to the Python file being generated
 void delimit_commands(const char *draw_filename, FILE *python_file) {
-    printf("Processing commands...\n");
 
     FILE *draw_file = fopen(draw_filename, "r");
     if (draw_file == NULL) {
@@ -160,6 +161,7 @@ void delimit_commands(const char *draw_filename, FILE *python_file) {
             strcat(buffer, " ");
         } else {
             // Execute single-line commands outside of blocks
+            printf("Executing command: %s\n", line);
             execute_command(line, python_file);
         }
     }

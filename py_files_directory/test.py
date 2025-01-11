@@ -10,9 +10,11 @@ if 'cursors' not in globals():
 def set_all_cursors_speed(speed):
     for cursor in cursors.values():
         cursor['turtle'].speed(speed)
+
 shapes = []
 animation_shapes = []
-def handle_cursor(id, x, y, visible):
+
+def handle_cursor(id, x, y, visible='TRUE'):
     if id not in cursors:
         cursors[id] = {
             'turtle': turtle.Turtle(),
@@ -26,29 +28,31 @@ def handle_cursor(id, x, y, visible):
         cursors[id]['turtle'].pensize(1)
         cursors[id]['turtle'].penup()
         cursors[id]['turtle'].speed(1)
+
     turtle.tracer(0)
     cursors[id]['x'] = x
     cursors[id]['y'] = y
     cursors[id]['turtle'].setpos(x, y)
-    if  (visible == 'TRUE') :
+
+    if visible == 'TRUE':
         cursors[id]['turtle'].showturtle()
-    else :
+    else:
         cursors[id]['turtle'].hideturtle()
+
     turtle.tracer(1)
     turtle.update()
-def handle_color(id, color):
+
+def handle_color(id, color='black'):
     cursors[id]['turtle'].color(color)
     cursors[id]['color'] = color
 
 def handle_circle(id, position, radius, id_form, color='null'):
     if position == 'null':
         position = cursors[id]['turtle'].pos()
-    initial_color = cursors[id]['turtle'].pencolor()
 
+    initial_color = cursors[id]['turtle'].pencolor()
     if color != 'null':
         cursors[id]['turtle'].color(color)
-
-
 
     cursors[id]['turtle'].penup()
     cursors[id]['turtle'].goto(position)
@@ -57,11 +61,12 @@ def handle_circle(id, position, radius, id_form, color='null'):
     cursors[id]['x'], cursors[id]['y'] = cursors[id]['turtle'].pos()
     cursors[id]['turtle'].penup()
     shapes.append((id_form, id, cursors[id]['turtle'].pos(), radius, 'circle'))
-
     cursors[id]['turtle'].color(initial_color)
+
 def handle_move(id, distance):
     cursors[id]['turtle'].forward(distance)
     cursors[id]['x'], cursors[id]['y'] = cursors[id]['turtle'].pos()
+
 x = 42
 y = x
 z = x * 2 + 3
@@ -75,6 +80,7 @@ else:
     handle_color(1, 'green')
 handle_circle(1, 'null', 100, 2)
 for I in range(1,10):
-    handle_move(1, I)
+    handle_move(1, I*10)
     pass
 turtle.done()
+

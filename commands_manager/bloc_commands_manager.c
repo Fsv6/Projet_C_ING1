@@ -258,6 +258,17 @@ void handle_for_python(const char *args, FILE *python_file) {
             strncpy(range_expr, in_pos + 4, block_start - (in_pos + 4));
             range_expr[block_start - (in_pos + 4)] = '\0';
 
+            // Remove the `RANGE` keyword if present
+            char *range_keyword = strstr(range_expr, "RANGE");
+            if (range_keyword) {
+                char *range_start = strchr(range_expr, '(');
+                char *range_end = strchr(range_expr, ')');
+                if (range_start && range_end && range_end > range_start) {
+                    memmove(range_expr, range_start + 1, range_end - range_start - 1);
+                    range_expr[range_end - range_start - 1] = '\0';
+                }
+            }
+
             char *block_end = strrchr(block_start, '}');
             if (block_end) {
                 strncpy(loop_block, block_start + 1, block_end - block_start - 1);

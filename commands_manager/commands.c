@@ -110,6 +110,8 @@ Parses the arguments to define or update a Python variable. Validates the variab
 and expression before writing the assignment to the Python script.
 */
 void handle_set_variable(const char *args, FILE *python_file) {
+
+    printf("SET command: %s\n", args);
     char variable_name[64], expression[256];
 
     int result = sscanf(args, "VARIABLE %63s = %255[^\n]", variable_name, expression);
