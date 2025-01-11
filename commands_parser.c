@@ -6,21 +6,22 @@
 #include "commands.h"
 #include "axes_generator.h"
 
-
-// Taille maximale pour une ligne du fichier
+// Maximum line length for file reading
 #define MAX_LINE_LENGTH 1024
-// Nombre maximum de mots-clés dans le dictionnaire
+// Maximum number of keywords in the dictionary
 #define MAX_KEYWORDS 100
-// Taille maximale pour un mot-clé
+// Maximum length for a single keyword
 #define MAX_KEYWORD_LENGTH 100
 
-void finalize_execution(FILE *draw_file,  FILE *python_file, const char *output_python_filename) {
-
+// Finalizes the execution process by closing files and executing the generated Python script
+// Parameters:
+// - draw_file: Pointer to the opened .draw file
+// - python_file: Pointer to the created Python file
+// - output_python_filename: Name of the generated Python file
+void finalize_execution(FILE *draw_file, FILE *python_file, const char *output_python_filename) {
     end_python_file(python_file);
-
     fclose(draw_file);
     fclose(python_file);
-
 
     char command[512];
     snprintf(command, sizeof(command), "py %s", output_python_filename);
@@ -32,17 +33,20 @@ void finalize_execution(FILE *draw_file,  FILE *python_file, const char *output_
     }
 }
 
-
-void execute_command(const char *line, FILE *python_file) {
+// Processes a single command line or a block command  and executes the corresponding function from the commands array
+// Parameters:
+// - command: Command from the .draw file
+// - python_file: Pointer to the Python file being generated
+void execute_command(const char *command, FILE *python_file) {
     char command_name[64], args[192];
 
-    if (sscanf(line, "%63s %191[^\n]", command_name, args) < 1) {
-        printf("Commande invalide ou vide : '%s'\n", line);
+    // Parse the command name and arguments from the line
+    if (sscanf(command, "%63s %191[^]", command_name, args) < 1) {
+        printf("Invalid or empty command: '%s'\n", command);
         return;
     }
 
-    printf("Commande : '%s', Arguments : '%s'\n", command_name, args);
-
+    // Match the command name to a known command and execute its associated function
     for (int j = 0; commands[j].name != NULL; j++) {
         if (strcmp(commands[j].name, command_name) == 0) {
             commands[j].compile(args, python_file);
@@ -50,11 +54,13 @@ void execute_command(const char *line, FILE *python_file) {
         }
     }
 
-
-    printf("Commande inconnue : '%s'\n", command_name);
+    printf("Unknown command: '%s'\n", command_name);
 }
 
-
+// Reads and processes commands from a .draw file, to delimitate one from another, handling block structures and single commands line
+// Parameters:
+// - draw_filename: Name of the .draw file
+// - python_file: Pointer to the Python file being generated
 void delimit_commands(const char *draw_filename, FILE *python_file) {
     printf("Processing commands...\n");
 
@@ -70,16 +76,14 @@ void delimit_commands(const char *draw_filename, FILE *python_file) {
     int inside_block = 0;
 
     while (fgets(line, sizeof(line), draw_file)) {
-        line[strcspn(line, "\n")] = '\0'; // Supprime le caractère de fin de ligne
-        printf("Read line: '%s'\n", line);
+        line[strcspn(line, "\n")] = '\0'; // Remove the newline character
 
-        // Détecte le début d'un bloc (commence par IF ou contient `{`)
+        // Detect the start of a block
         if (strchr(line, '{')) {
             if (!inside_block) {
-                printf("Detected start of block.\n");
                 inside_block = 1;
 
-                // Initialise le tampon
+                // Initialize the buffer
                 buffer_size = strlen(line) + 2;
                 buffer = malloc(buffer_size);
                 if (!buffer) {
@@ -87,10 +91,10 @@ void delimit_commands(const char *draw_filename, FILE *python_file) {
                     fclose(draw_file);
                     return;
                 }
-                buffer[0] = '\0'; // Initialise comme chaîne vide
+                buffer[0] = '\0'; // Initialize as an empty string
             }
 
-            // Ajoute la ligne au tampon
+            // Append the line to the buffer
             buffer_size += strlen(line) + 2;
             buffer = realloc(buffer, buffer_size);
             if (!buffer) {
@@ -103,11 +107,10 @@ void delimit_commands(const char *draw_filename, FILE *python_file) {
             continue;
         }
 
-        // Si une ligne contient à la fois `}` et `{`, le bloc continue
+        // Detect continuation of a block
         if (strchr(line, '}') && strchr(line, '{')) {
-            printf("Detected continuation of block with '} ... {'.\n");
 
-            // Ajoute la ligne au tampon
+            // Append the line to the buffer
             buffer_size += strlen(line) + 2;
             buffer = realloc(buffer, buffer_size);
             if (!buffer) {
@@ -120,11 +123,10 @@ void delimit_commands(const char *draw_filename, FILE *python_file) {
             continue;
         }
 
-        // Détecte la fin d'un bloc (contient uniquement `}`)
+        // Detect the end of a block
         if (strrchr(line, '}')) {
-            printf("Detected end of block.\n");
 
-            // Ajoute la ligne au tampon
+            // Append the line to the buffer
             buffer_size += strlen(line) + 2;
             buffer = realloc(buffer, buffer_size);
             if (!buffer) {
@@ -134,11 +136,10 @@ void delimit_commands(const char *draw_filename, FILE *python_file) {
             }
             strcat(buffer, line);
 
-            // Exécute le bloc complet
-            printf("Executing block: '%s'\n", buffer);
+            // Execute the complete block
             execute_command(buffer, python_file);
 
-            // Nettoie le tampon
+            // Clear the buffer
             free(buffer);
             buffer = NULL;
             buffer_size = 0;
@@ -146,9 +147,8 @@ void delimit_commands(const char *draw_filename, FILE *python_file) {
             continue;
         }
 
-        // Ajoute au tampon si nous sommes dans un bloc
+        // Append to the buffer if inside a block
         if (inside_block) {
-            printf("Appending to block: '%s'\n", line);
             buffer_size += strlen(line) + 2;
             buffer = realloc(buffer, buffer_size);
             if (!buffer) {
@@ -159,13 +159,12 @@ void delimit_commands(const char *draw_filename, FILE *python_file) {
             strcat(buffer, line);
             strcat(buffer, " ");
         } else {
-            // Exécute les commandes hors blocs
-            printf("Executing single line command: '%s'\n", line);
+            // Execute single-line commands outside of blocks
             execute_command(line, python_file);
         }
     }
 
-    // Vérifie si un bloc est resté ouvert
+    // Check for unclosed blocks
     if (buffer) {
         fprintf(stderr, "Warning: Unclosed block detected. Buffer content: '%s'\n", buffer);
         free(buffer);
@@ -174,10 +173,12 @@ void delimit_commands(const char *draw_filename, FILE *python_file) {
     fclose(draw_file);
 }
 
-
-
-
-
+// Checks if a word is in a list
+// Parameters:
+// - word: The word to check
+// - list: The list of words
+// - list_size: The size of the list
+// Returns true if the word is found, otherwise false
 bool is_in_list(const char *word, const char **list, int list_size) {
     for (int i = 0; i < list_size; i++) {
         if (strcmp(word, list[i]) == 0) {
@@ -187,8 +188,11 @@ bool is_in_list(const char *word, const char **list, int list_size) {
     return false;
 }
 
-
-// Fonction principale pour lire et interpréter le fichier .draw
+// Main function to process and interpret a .draw file : reads the file,
+// detects commands keyword to and executes the associated functions and create the adequate functions in the Python script
+// Parameters:
+// - draw_filename: Name of the .draw file
+// - output_python_filename: Name of the output Python file
 void draw_handler(const char *draw_filename, const char *output_python_filename) {
     FILE *draw_file = fopen(draw_filename, "r");
     if (draw_file == NULL) {
@@ -223,27 +227,26 @@ void draw_handler(const char *draw_filename, const char *output_python_filename)
         }
     }
 
-    // Appeler les fonctions associées aux mots-clés détectés
+    // Execute associated functions for detected command keywords
     for (int i = 0; i < detected_count; i++) {
-        bool handler_found = false; // Pour vérifier si un gestionnaire a été trouvé
+        bool handler_found = false;
         for (int j = 0; commands[j].name != NULL; j++) {
             if (strcmp(detected_commands[i], commands[j].name) == 0) {
-                handler_found = true; // Marque qu'un gestionnaire a été trouvé
-                printf("Executing handler for keyword: %s\n", commands[j].name);
+                handler_found = true;
                 if (commands[j].create != NULL) {
-                    commands[j].create(python_file); // Appelle la fonction si elle est définie
+                    commands[j].create(python_file);
                 } else {
-                    printf("No handler function for keyword: %s\n", commands[j].name);
+                    printf("No handler function for command: %s\n", commands[j].name);
                 }
                 break;
             }
         }
         if (!handler_found) {
-            printf("No handler found for keyword: %s\n", detected_commands[i]);
+            printf("No handler found for command : %s\n", detected_commands[i]);
         }
     }
 
-    // Libérer la mémoire allouée
+    // Free allocated memory for detected commands
     for (int i = 0; i < detected_count; i++) {
         free((void *)detected_commands[i]);
     }
@@ -253,7 +256,4 @@ void draw_handler(const char *draw_filename, const char *output_python_filename)
     delimit_commands(draw_filename, python_file);
 
     finalize_execution(draw_file, python_file, output_python_filename);
-
 }
-
-

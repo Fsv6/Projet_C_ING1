@@ -29,6 +29,8 @@ void call_thickness_func_py(const char *args, FILE *python_file);
 void call_animation_func_py(const char *args, FILE *python_file);
 void call_goto_func_py(const char *args, FILE *python_file);
 
+void handle_set_variable(const char *args, FILE *python_file);
+
 
 
 extern Command commands[];

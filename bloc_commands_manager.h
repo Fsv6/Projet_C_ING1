@@ -3,7 +3,6 @@
 #include <stdio.h>
 
 void handle_while_python(const char *args, FILE *python_file);
-void handle_set_variable(const char *args, FILE *python_file);
 void handle_if_python(const char *args, FILE *python_file);
 void handle_for_python(const char *args, FILE *python_file);
 void handle_break_python(const char *args, FILE *python_file);

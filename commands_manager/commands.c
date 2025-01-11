@@ -8,7 +8,6 @@
 #include "python_functions_writer.h"
 #include "bloc_commands_manager.h"
 
-
 /*
 List of available commands and their handlers.
 
@@ -37,21 +36,18 @@ Command commands[] = {
     {"CONTINUE", handle_continue_python, NULL},
     {"PASS", handle_end_python, NULL},
 
-    {NULL, NULL, NULL} // Fin de tableau
+    {NULL, NULL, NULL} // End of table
 };
 
-
-// Fonction pour récupérer les noms des commandes
+// Retrieves the names of available commands
 const char** get_command_names(Command commands[], int* count) {
     int command_count = 0;
 
-    // Comptez le nombre de commandes valides
     for (int i = 0; commands[i].name != NULL; i++) {
         command_count++;
     }
     *count = command_count;
 
-    // Allouez un tableau pour les noms des commandes
     const char** names = (const char**)malloc(command_count * sizeof(const char*));
     for (int i = 0; i < command_count; i++) {
         names[i] = commands[i].name;
@@ -59,111 +55,97 @@ const char** get_command_names(Command commands[], int* count) {
     return names;
 }
 
-
-
-
 /*
-call CURSOR command: call a new cursor.
-Args:
-    args (const char*): The command arguments (ID, x, y, visibility).
-    python_file (FILE*): The Python file where the generated code will be written.
-Purpose:
-    This command create the call of the function to create a new turtle cursor in Python.
-Returns:
-    None
+Handles the "CURSOR" command.
+Parses the arguments to extract cursor details (ID, x, y, visible) and writes a call
+to the Python function for handling cursors.
 */
-void call_cursor_func_py(const char *args,FILE *python_file) {
-    char id[64];
-    char visible[64];
-    char x[64];
-    char y[64];
+void call_cursor_func_py(const char *args, FILE *python_file) {
+    char id[64], visible[64], x[64], y[64];
 
-    // Extraire les valeurs depuis la chaîne args
-    if (sscanf(args, "%63s %63s %63s %63s", id, &x, &y, visible) != 4) {
-        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
+    if (sscanf(args, "%63s %63s %63s %63s", id, x, y, visible) != 4) {
+        fprintf(stderr, "Error: Failed to parse CURSOR command arguments: '%s'\n", args);
         return;
     }
 
-    // Vérifiez que les valeurs extraites sont valides
-    printf("Parsed values - id: %s, x: %s, y: %s, visible: %s\n", id, x, y, visible);
-
-    // faire un appel dans python à la fonction qui gère les curseurs
     fprintf(python_file, "handle_cursor(%s, %s, %s, '%s')\n", id, x, y, visible);
 }
 
-
-
 /*
-call COLOR command: Changes the color of a cursor.
-Args:
-    args (const char*): The command arguments (ID, color).
-    python_file (FILE*): The Python file where the generated code will be written.
-Purpose:
-    This command create the call of the function to changes the color of a cursor.
-Returns:
-    None
+Handles the "COLOR" command.
+Parses the arguments to extract the cursor ID and new color, then writes a call
+to the Python function for changing the cursor's color.
 */
 void call_color_func_py(const char *args, FILE *python_file) {
-    char id[64];
-    char color[64];
+    char id[64], color[64];
 
-    // Extraire les valeurs depuis la chaîne args
     if (sscanf(args, "%63s %63s", id, color) != 2) {
-        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
+        fprintf(stderr, "Error: Failed to parse COLOR command arguments: '%s'\n", args);
         return;
     }
 
-    printf("Parsed values - id: %s, color : %s", id, color);
-
-    // faire un appel dans python à la fonction qui gère les curseurs
     fprintf(python_file, "handle_color(%s, '%s')\n", id, color);
 }
 
-
-
 /*
-call THICKNESS command: Changes the thickness of the pen for a cursor.
-Args:
-    args (const char*): The command arguments (ID, thickness).
-    python_file (FILE*): The Python file where the generated code will be written.
-Purpose:
-    This command create the call of the function to Changes the thickness of the pen for a cursor.
-Returns:
-    None
+Handles the "THICKNESS" command.
+Parses the arguments to extract the cursor ID and new pen thickness, then writes
+a call to the Python function for updating the cursor's pen size.
 */
 void call_thickness_func_py(const char *args, FILE *python_file) {
     char id[64];
     int thickness;
 
-    // Extraire les valeurs depuis la chaîne args
-    if (sscanf(args, "%63s %d", id, thickness) != 2) {
-        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
+    if (sscanf(args, "%63s %d", id, &thickness) != 2) {
+        fprintf(stderr, "Error: Failed to parse THICKNESS command arguments: '%s'\n", args);
         return;
     }
 
-    printf("Parsed values - id: %s, thickness : %d", id, thickness);
-
-    // faire un appel dans python à la fonction qui gère les curseurs
     fprintf(python_file, "handle_thickness('%s', %d)\n", id, thickness);
 }
 
+/*
+Handles the "SET" command.
+Parses the arguments to define or update a Python variable. Validates the variable name
+and expression before writing the assignment to the Python script.
+*/
+void handle_set_variable(const char *args, FILE *python_file) {
+    char variable_name[64], expression[256];
+
+    int result = sscanf(args, "VARIABLE %63s = %255[^\n]", variable_name, expression);
+    if (result != 2) {
+        fprintf(stderr, "Error: Invalid SET command format: '%s'\n", args);
+        return;
+    }
+
+    printf("Parsed SET command - Variable: '%s', Expression: '%s'\n", variable_name, expression);
+
+    for (char *c = variable_name; *c; ++c) {
+        if (!((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z') || (*c == '_') || (*c >= '0' && *c <= '9' && c != variable_name))) {
+            fprintf(stderr, "Error: Invalid variable name '%s'.\n", variable_name);
+            return;
+        }
+    }
+
+    if (strlen(expression) == 0) {
+        fprintf(stderr, "Error: Empty expression for variable '%s'.\n", variable_name);
+        return;
+    }
+
+    fprintf(python_file, "%s = %s\n", variable_name, expression);
+}
 
 
 /*
-call MOVE command: Move a cursor.
-Args:
-    args (const char*): The command arguments (ID, distance).
-    python_file (FILE*): The Python file where the generated code will be written.
-Purpose:
-    This command create the call of the function to a cursor in a direction giving the distance.
-Returns:
-    None
+Handles the `MOVE` command.
+Parses the arguments to extract the cursor ID and distance to move.
+Writes a call to the corresponding Python function to move the cursor.
 */
 void call_move_func_py(const char *args, FILE *python_file) {
     char id[64];
     char distance[100];
 
-    // Extraire les valeurs depuis la chaîne args
+    // Extract values from the argument string
     if (sscanf(args, "%63s %100s", id, distance) != 2) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
@@ -171,28 +153,21 @@ void call_move_func_py(const char *args, FILE *python_file) {
 
     printf("Parsed values - id: %s, distance : %s", id, distance);
 
-    // faire un appel dans python à la fonction qui gère les curseurs
+    // Write a Python call to the function handling the move command
     fprintf(python_file, "handle_move(%s, %s)\n", id, distance);
 }
 
-
-
 /*
-call GOTO command: Teleport a cursor.
-Args:
-    args (const char*): The command arguments (ID, x, y).
-    python_file (FILE*): The Python file where the generated code will be written.
-Purpose:
-    This command create the call of the function to teleport the cursor to a position.
-Returns:
-    None
+Handles the `GOTO` command.
+Parses the arguments to extract the cursor ID and the target coordinates (x, y).
+Writes a call to the Python function that teleports the cursor to the specified position.
 */
 void call_goto_func_py(const char *args, FILE *python_file) {
     char id[64];
     char x[100];
     char y[100];
 
-    // Extraire les valeurs depuis la chaîne args
+    // Extract values from the argument string
     if (sscanf(args, "%63s %100s %100s", id, x, y) != 3) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
@@ -200,27 +175,20 @@ void call_goto_func_py(const char *args, FILE *python_file) {
 
     printf("Parsed values - id: %s, x : %s, y : %s", id, x, y);
 
-    // faire un appel dans python à la fonction qui gère les curseurs
+    // Write a Python call to the function handling the goto command
     fprintf(python_file, "handle_goto(%s, %s, %s)\n", id, x, y);
 }
 
-
-
 /*
-call ROTATE command: Rotates the cursor by a specified angle.
-Args:
-    args (const char*): The command arguments (ID, angle).
-    python_file (FILE*): The Python file where the generated code will be written.
-Purpose:
-    This command create the call of the function to rotates a cursor by the given angle in degrees.
-Returns:
-    None
+Handles the `ROTATE` command.
+Parses the arguments to extract the cursor ID and rotation angle.
+Writes a call to the Python function that rotates the cursor by the given angle.
 */
 void call_rotate_func_py(const char *args, FILE *python_file) {
     char id[64];
     char angle[64];
 
-    // Extraire les valeurs depuis la chaîne args
+    // Extract values from the argument string
     if (sscanf(args, "%63s %63s", id, angle) != 2) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
@@ -228,28 +196,21 @@ void call_rotate_func_py(const char *args, FILE *python_file) {
 
     printf("Parsed values - id: %s, angle : %s", id, angle);
 
-    // faire un appel dans python à la fonction qui gère les curseurs
+    // Write a Python call to the function handling the rotate command
     fprintf(python_file, "handle_rotate('%s', %s)\n", id, angle);
 }
 
-
-
 /*
-call LINE command: Make a line.
-Args:
-    args (const char*): The command arguments (ID, distance, ID_form).
-    python_file (FILE*): The Python file where the generated code will be written.
-Purpose:
-    This command create the call of the function to make a line with a given distance.
-Returns:
-    None
+Handles the `LINE` command.
+Parses the arguments to extract the cursor ID, the distance, and the line's form ID.
+Writes a call to the Python function that draws a line with the specified properties.
 */
 void call_line_func_py(const char *args, FILE *python_file) {
     char id[64];
     char distance[64];
     char id_form[64];
 
-    // Extraire les valeurs depuis la chaîne args
+    // Extract values from the argument string
     if (sscanf(args, "%63s %63s %63s", id, distance, id_form) != 3) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
@@ -257,143 +218,21 @@ void call_line_func_py(const char *args, FILE *python_file) {
 
     printf("Parsed values - id: %s, distance : %s, id_form : %s", id, distance, id_form);
 
-    // faire un appel dans python à la fonction qui gère les curseurs
+    // Write a Python call to the function handling the line command
     fprintf(python_file, "handle_line(%s, 'null', %s, %s)\n", id, distance, id_form);
 }
 
-
-
 /*
-call CIRCLE command: Make a circle.
-Args:
-    args (const char*): The command arguments (ID, radius, ID_form).
-    python_file (FILE*): The Python file where the generated code will be written.
-Purpose:
-    This command create the call of the function to make a circle.
-Returns:
-    None
+Handles the `CIRCLE` command.
+Parses the arguments to extract the cursor ID, radius, and form ID.
+Writes a call to the Python function that draws a circle with the specified properties.
 */
 void call_circle_func_py(const char *args, FILE *python_file) {
     char id[64];
     char radius[64];
     char id_form[64];
 
-    // Extraire les valeurs depuis la chaîne args
-    if (sscanf(args, "%63s %63s %63s", id, radius, id_form) !=3) {
-        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
-        return;
-    }
-
-    printf("Parsed values - id: %s, radius : %s, id_form: %s", id, radius, id_form);
-
-    // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_circle(%s, 'null', %s, %s)\n", id, radius, id_form);
-}
-
-
-
-/*
-call SQUARE command: Make a square.
-Args:
-    args (const char*): The command arguments (ID, side_length, ID_form).
-    python_file (FILE*): The Python file where the generated code will be written.
-Purpose:
-    This command create the call of the function to make a square.
-Returns:
-    None
-*/
-void call_square_func_py(const char *args, FILE *python_file) {
-    char id[64];
-    char side_length[64];
-    char id_form[64];
-
-    // Extraire les valeurs depuis la chaîne args
-    if (sscanf(args, "%63s %63s %63s", id, side_length, id_form) != 3) {
-        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
-        return;
-    }
-
-    printf("Parsed values - id: %s, side_length : %s, id_form: %s", id, side_length, id_form);
-
-    // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_square(%s, 'null', %s, %s)\n", id, side_length, id_form);
-}
-
-
-/*
-call RECTANGLE command: Make a rectangle.
-Args:
-    args (const char*): The command arguments (ID, side_1, side_2, ID_form).
-    python_file (FILE*): The Python file where the generated code will be written.
-Purpose:
-    This command create the call of the function to make a rectangle.
-Returns:
-    None
-*/
-void call_rectangle_func_py(const char *args, FILE *python_file) {
-    char id[64];
-    char side_1[64];
-    char side_2[64];
-    char id_form[64];
-
-    // Extraire les valeurs depuis la chaîne args
-    if (sscanf(args, "%63s %63s %63s %63s", id, side_1, side_2, id_form) != 4) {
-        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
-        return;
-    }
-
-    printf("Parsed values - id: %s, side_1 : %s, side_2 : %s, id_form: %s", id, side_1, side_2, id_form);
-
-    // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_rectangle(%s, 'null', %s, %s, %s)\n", id, side_1, side_2, id_form);
-}
-
-
-
-/*
-call POINT command: Make a point.
-Args:
-    args (const char*): The command arguments (ID, ID_form).
-    python_file (FILE*): The Python file where the generated code will be written.
-Purpose:
-    This command create the call of the function to make a point.
-Returns:
-    None
-*/
-void call_point_func_py(const char *args, FILE *python_file) {
-    char id[64];
-    char id_form[64];
-
-    // Extraire les valeurs depuis la chaîne args
-    if (sscanf(args, "%63s 63s", id, id_form) != 2) {
-        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
-        return;
-    }
-
-    printf("Parsed values - id: %s, id_form: %s", id, id_form);
-
-    // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_point('%s', 'null', %s)\n", id, id_form);
-}
-
-
-
-/*
-call ARC command: Make a arc.
-Args:
-    args (const char*): The command arguments (ID, radius, ID_form).
-    python_file (FILE*): The Python file where the generated code will be written.
-Purpose:
-    This command create the call of the function to make a arc.
-Returns:
-    None
-*/
-void call_arc_func_py(const char *args, FILE *python_file) {
-    char id[64];
-    char radius[64];
-    char id_form[64];
-
-    // Extraire les valeurs depuis la chaîne args
+    // Extract values from the argument string
     if (sscanf(args, "%63s %63s %63s", id, radius, id_form) != 3) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
@@ -401,20 +240,102 @@ void call_arc_func_py(const char *args, FILE *python_file) {
 
     printf("Parsed values - id: %s, radius : %s, id_form: %s", id, radius, id_form);
 
-    // faire un appel dans python à la fonction qui gère les curseurs
-    fprintf(python_file, "handle_square(%s, 'null', %s, %s)\n", id, radius, id_form);
+    // Write a Python call to the function handling the circle command
+    fprintf(python_file, "handle_circle(%s, 'null', %s, %s)\n", id, radius, id_form);
 }
 
+/*
+Handles the `SQUARE` command.
+Parses the arguments to extract the cursor ID, side length, and form ID.
+Writes a call to the Python function that draws a square with the specified properties.
+*/
+void call_square_func_py(const char *args, FILE *python_file) {
+    char id[64];
+    char side_length[64];
+    char id_form[64];
+
+    // Extract values from the argument string
+    if (sscanf(args, "%63s %63s %63s", id, side_length, id_form) != 3) {
+        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
+        return;
+    }
+
+    printf("Parsed values - id: %s, side_length : %s, id_form: %s", id, side_length, id_form);
+
+    // Write a Python call to the function handling the square command
+    fprintf(python_file, "handle_square(%s, 'null', %s, %s)\n", id, side_length, id_form);
+}
 
 /*
-call ANIMATION command: Animate figure.
-Args:
-    args (const char*): The command arguments (ID, move_distance, move_r, angle_degrees).
-    python_file (FILE*): The Python file where the generated code will be written.
-Purpose:
-    This command create the call of the function to animate figures.
-Returns:
-    None
+Handles the `RECTANGLE` command.
+Parses the arguments to extract the cursor ID, side lengths, and form ID.
+Writes a call to the Python function that draws a rectangle with the specified properties.
+*/
+void call_rectangle_func_py(const char *args, FILE *python_file) {
+    char id[64];
+    char side_1[64];
+    char side_2[64];
+    char id_form[64];
+
+    // Extract values from the argument string
+    if (sscanf(args, "%63s %63s %63s %63s", id, side_1, side_2, id_form) != 4) {
+        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
+        return;
+    }
+
+    printf("Parsed values - id: %s, side_1 : %s, side_2 : %s, id_form: %s", id, side_1, side_2, id_form);
+
+    // Write a Python call to the function handling the rectangle command
+    fprintf(python_file, "handle_rectangle(%s, 'null', %s, %s, %s)\n", id, side_1, side_2, id_form);
+}
+
+/*
+Handles the `POINT` command.
+Parses the arguments to extract the cursor ID and form ID.
+Writes a call to the Python function that draws a point at the current cursor position.
+*/
+void call_point_func_py(const char *args, FILE *python_file) {
+    char id[64];
+    char id_form[64];
+
+    // Extract values from the argument string
+    if (sscanf(args, "%63s %63s", id, id_form) != 2) {
+        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
+        return;
+    }
+
+    printf("Parsed values - id: %s, id_form: %s", id, id_form);
+
+    // Write a Python call to the function handling the point command
+    fprintf(python_file, "handle_point('%s', 'null', %s)\n", id, id_form);
+}
+
+/*
+Handles the `ARC` command.
+Parses the arguments to extract the cursor ID, radius, and form ID.
+Writes a call to the Python function that draws an arc with the specified properties.
+*/
+void call_arc_func_py(const char *args, FILE *python_file) {
+    char id[64];
+    char radius[64];
+    char id_form[64];
+
+    // Extract values from the argument string
+    if (sscanf(args, "%63s %63s %63s", id, radius, id_form) != 3) {
+        fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
+        return;
+    }
+
+    printf("Parsed values - id: %s, radius : %s, id_form: %s", id, radius, id_form);
+
+    // Write a Python call to the function handling the arc command
+    fprintf(python_file, "handle_semi_circle(%s, 'null', %s, %s)\n", id, radius, id_form);
+}
+
+/*
+Handles the `ANIMATION` command.
+Parses the arguments to extract the figure IDs, movement distance, rotation steps, and rotation angle.
+Writes Python code to animate the specified figures over the given number of steps.
 */
 void call_animation_func_py(const char *args, FILE *python_file) {
     char ids[64];
@@ -422,7 +343,7 @@ void call_animation_func_py(const char *args, FILE *python_file) {
     char move_r[64];
     char angle_degrees[64];
 
-    // Extraire les valeurs depuis la chaîne args
+    // Extract values from the argument string
     if (sscanf(args, "%63s %63s %63s %63s", ids, move_distance, move_r, angle_degrees) != 4) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
@@ -430,7 +351,7 @@ void call_animation_func_py(const char *args, FILE *python_file) {
 
     printf("Parsed values - ids: %s, move_distance : %s, move_r : %s, angle_degrees : %s", ids, move_distance, move_r, angle_degrees);
 
-    // faire un appel dans python à la fonction qui gère les curseurs
+    // Write the Python code for animating the figures
     fprintf(python_file, "set_all_cursors_speed(0)\n");
     fprintf(python_file, "turtle.tracer(n=10, delay=0)\n");
     fprintf(python_file, "\n");
@@ -445,5 +366,3 @@ void call_animation_func_py(const char *args, FILE *python_file) {
     fprintf(python_file, "turtle.tracer(n=1, delay=10)\n");
     fprintf(python_file, "set_all_cursors_speed(1)\n");
 }
-
-
