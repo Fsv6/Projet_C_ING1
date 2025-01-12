@@ -1,0 +1,17 @@
+
+CURSOR 1 0 0 TRUE
+COLOR 1 blue
+THICKNESS 1 2.5
+LINE 1 100 1    # Ligne de 100 pixels
+GOTO 1 50 50    # Déplacement à la position (50, 50)
+CIRCLE 1 40 2   # Cercle de rayon 40
+SQUARE 1 30 3   # Carré de côté 30
+RECTANGLE 1 50 20 4  # Rectangle de largeur 50 et hauteur 20
+POINT 1 5       # Point
+
+SET VARIABLE VARX = 100
+SET VARIABLE VARY = -50
+GOTO 1 VARX VARY  # Déplacement à une position calculée avec des variables
+
+ARC 1 60 6       # Arc de rayon 60
+
