@@ -27,7 +27,7 @@ Command_description commands_description[] = {
     {"RECTANGLE", "Draw a rectangle.", "id (string), side1_length (float), side2_length (float), id_form (string)"},
     {"POINT", "Draw a point at the current cursor position.", "id (string), id_form (string)"},
     {"ARC", "Draw an arc.", "id (string), radius (float), id_form (string)"},
-    {"ANIME", "Animate a figure's movement : move it in a certain direction according to a given angle.", "ids (string), move_distance (float), steps (int), angle (float)"},
+    {"ANIME", "Animate a figure's movement : move it in a certain direction according to a given angle.", "ids (string), move_distance (float), angle (float)"},
     {"SET", "Assign a value to a variable.",
       "Format: SET VARIABLE variable_name = expression, where:\n"
       "- variable_name: a valid identifier (letters, digits, '_')\n"

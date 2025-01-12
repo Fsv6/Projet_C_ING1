@@ -105,6 +105,7 @@ void handle_if_python(const char *args, FILE *python_file) {
     }
 
     // Process commands in the ELSE block
+    fprintf(python_file, "\n");
     fprintf(python_file, "else:\n");
     command_start = else_block;
     while (*command_start != '\0') {
