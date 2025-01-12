@@ -1,3 +1,20 @@
-CURSOR 1 10 15 TRUE
-CIRCLE 1 50 "1"
-ANIME ["1"] 5 100 45
+// Variables
+SET VARIABLE centerX = 50
+SET VARIABLE centerY = 50
+SET VARIABLE radius = 30
+SET VARIABLE moveStep = 15
+CURSOR 1 centerX centerY TRUE
+COLOR 1 yellow
+CIRCLE 1 radius 3
+FOR ANGLE IN RANGE(0, 1000) {
+    CURSOR 2 centerX+math.cos(ANGLE)*radius centerY+math.sin(ANGLE)*radius TRUE
+}
+IF CURSOR WITH ID = 2 IS IN POSITION X > 30 {
+    COLOR 1 red,
+    MOVE 1 centerX+moveStep centerY+moveStep,
+    MOVE 2 centerX-moveStep centerY-moveStep
+} ELSE {
+    COLOR 1 green,
+    COLOR 2 orange
+}
+ANIME [1,2,3] 4 10 90

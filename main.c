@@ -18,27 +18,25 @@ Command_description commands_description[] = {
     {"CURSOR", "Create a cursor at a given position.", "id (string), x (int), y (int), visible (bool)"},
     {"COLOR", "Change the color of a cursor.", "id (string), color (string)"},
     {"THICKNESS", "Change the line thickness for a cursor.", "id (string), thickness (float)"},
-    {"MOVE", "Move a cursor by a certain distance.", "id (string), distance (float)"},
+    {"MOVE", "Move a cursor forward by a certain distance.", "id (string), distance (float)"},
+    {"GOTO", "Move a cursor to specific coordinates.", "id (string), x (float), y (float)"},
     {"ROTATE", "Rotate a cursor by a given angle.", "id (string), angle (float)"},
-    {"LINE", "Draw a line.", "id (string), distance (float), id_form (string)"},
+    {"LINE", "Draw a line forward from the actual cursor position to a certain point according to the distance given.", "id (string), distance (float), id_form (string)"},
     {"CIRCLE", "Draw a circle.", "id (string), radius (float), id_form (string)"},
     {"SQUARE", "Draw a square.", "id (string), side_length (float), id_form (string)"},
     {"RECTANGLE", "Draw a rectangle.", "id (string), side1_length (float), side2_length (float), id_form (string)"},
     {"POINT", "Draw a point at the current cursor position.", "id (string), id_form (string)"},
     {"ARC", "Draw an arc.", "id (string), radius (float), id_form (string)"},
-    {"ANIME", "Animate a figure's movement and rotation.", "ids (string), move_distance (float), steps (int), angle (float)"},
-    {"GOTO", "Move a cursor to specific coordinates.", "id (string), x (float), y (float)"},
+    {"ANIME", "Animate a figure's movement : move it in a certain direction according to a given angle.", "ids (string), move_distance (float), steps (int), angle (float)"},
+    {"SET", "Assign a value to a variable.",
+      "Format: SET VARIABLE variable_name = expression, where:\n"
+      "- variable_name: a valid identifier (letters, digits, '_')\n"
+      "- expression: any valid numerical or logical expression."},
     {"IF", "Conditional statement: executes code if a condition is true.",
-     "Format: IF CURSOR WITH ID = id IS IN POSITION X op value AND/OR Y op value {...}, where:\n"
+     "Format: IF CURSOR WITH ID = id IS IN POSITION X op value AND/OR Y op value {...} ELSE {...}, where:\n"
      "- op: comparison operator (e.g., >, <, ==, !=)\n"
      "- value: a numeric value or variable\n"
      "Commands inside the block must be separated by commas."},
-    {"ELSE", "Conditional statement: executes code if the preceding IF condition is false.",
-     "Format: ELSE {...}, where commands inside the block must be separated by commas."},
-    {"SET", "Assign a value to a variable.",
-     "Format: SET VARIABLE variable_name = expression, where:\n"
-     "- variable_name: a valid identifier (letters, digits, '_')\n"
-     "- expression: any valid numerical or logical expression."},
     {"FOR", "FOR loop: repeats an action a defined number of times.",
      "Format: FOR variable IN RANGE(start, end, step) {...}, where:\n"
      "- variable: loop variable (e.g., i)\n"
@@ -176,7 +174,7 @@ void create_file() {
     getchar();
 
     char filepath[512];
-    snprintf(filepath, sizeof(filepath), "../draw_files/%s.draw", filename);
+    snprintf(filepath, sizeof(filepath), "./draw_files/%s.draw", filename);
 
     FILE *file = fopen(filepath, "w");
     if (file == NULL) {
@@ -245,7 +243,7 @@ void open_file(const char *directory) {
     scanf("%s", filename);
     getchar();
 
-    snprintf(filepath, sizeof(filepath), "../draw_files/%s.draw", filename);
+    snprintf(filepath, sizeof(filepath), "./draw_files/%s.draw", filename);
 
     FILE *file = fopen(filepath, "r");
     if (file == NULL) {
@@ -365,9 +363,9 @@ void compile() {
     getchar();
 
     char draw_filepath[512], python_filepath[512];
-    snprintf(draw_filepath, sizeof(draw_filepath), "../draw_files/%s.draw", draw_filename);
+    snprintf(draw_filepath, sizeof(draw_filepath), "./draw_files/%s.draw", draw_filename);
 
-    snprintf(python_filepath, sizeof(python_filepath), "../py_files_directory/%s.py", draw_filename);
+    snprintf(python_filepath, sizeof(python_filepath), "./py_files_directory/%s.py", draw_filename);
 
     draw_handler(draw_filepath, python_filepath);
 

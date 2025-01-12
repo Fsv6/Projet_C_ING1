@@ -81,6 +81,5 @@ else:
 handle_circle(1, 'null', 100, 2)
 for I in range(1,10):
     handle_move(1, I*10)
-    pass
 turtle.done()
 

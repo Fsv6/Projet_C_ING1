@@ -274,33 +274,80 @@ void create_animation_func_py(FILE *python_file) {
     fprintf(python_file, "    angle_radians = math.radians(angle_degrees)\n");
     fprintf(python_file, "    dx = move_distance * math.cos(angle_radians)\n");
     fprintf(python_file, "    dy = move_distance * math.sin(angle_radians)\n");
-
-    // Process each shape to update its position
     fprintf(python_file, "    for shape in shapes[:]:\n");
     fprintf(python_file, "        if shape[0] in ids:\n");
     fprintf(python_file, "            animation_shapes.append(shape)\n");
     fprintf(python_file, "            shapes.remove(shape)\n");
-
-    // Handle visibility of shapes during animation
-    fprintf(python_file, "    if show:\n");
+    fprintf(python_file, "\n");
+    fprintf(python_file, "    if (show):\n");
     fprintf(python_file, "        for shape in animation_shapes:\n");
     fprintf(python_file, "            if shape[1] in ids:\n");
     fprintf(python_file, "                cursors[shape[1]]['turtle'].showturtle()\n");
     fprintf(python_file, "    else:\n");
     fprintf(python_file, "        for shape in animation_shapes:\n");
     fprintf(python_file, "            if shape[1] in ids:\n");
-    fprintf(python_file, "                cursors[shape[1]]['turtle'].hideturtle()\n\n");
-
-    // Update positions for animated shapes
+    fprintf(python_file, "                cursors[shape[1]]['turtle'].hideturtle()\n");
+    fprintf(python_file, "\n");
     fprintf(python_file, "    for shape in animation_shapes[:]:\n");
     fprintf(python_file, "        if shape[0] in ids:\n");
-    fprintf(python_file, "            new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
-    fprintf(python_file, "            handle_circle(shape[1], shape[2], shape[3], shape[0], 'white')\n");
-    fprintf(python_file, "            shapes.pop()\n");
-    fprintf(python_file, "            handle_circle(shape[1], new_position, shape[3], shape[0], 'null')\n");
-    fprintf(python_file, "            final_animation.append(shapes.pop())\n\n");
-
-    // Restore shapes to final positions
+    fprintf(python_file, "            if shape[4] == 'circle':\n");
+    fprintf(python_file, "                new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
+    fprintf(python_file, "                handle_circle(shape[1], shape[2], shape[3], shape[0], 'white')\n");
+    fprintf(python_file, "                shapes.pop()\n");
+    fprintf(python_file, "                handle_circle(shape[1], new_position, shape[3], shape[0], 'null')\n");
+    fprintf(python_file, "                final_animation.append(shapes.pop())\n");
+    fprintf(python_file, "            elif shape[4] == 'line':\n");
+    fprintf(python_file, "                new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
+    fprintf(python_file, "                handle_line(shape[1], shape[2], shape[3], shape[0], 'white')\n");
+    fprintf(python_file, "                shapes.pop()\n");
+    fprintf(python_file, "                handle_line(shape[1], new_position, shape[3], shape[0], 'null')\n");
+    fprintf(python_file, "                final_animation.append(shapes.pop())\n");
+    fprintf(python_file, "            elif shape[4] == 'square':\n");
+    fprintf(python_file, "                new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
+    fprintf(python_file, "                handle_square(shape[1], shape[2], shape[3], shape[0], 'white')\n");
+    fprintf(python_file, "                shapes.pop()\n");
+    fprintf(python_file, "                handle_square(shape[1], new_position, shape[3], shape[0], 'null')\n");
+    fprintf(python_file, "                final_animation.append(shapes.pop())\n");
+    fprintf(python_file, "            elif shape[4] == 'semi-circle':\n");
+    fprintf(python_file, "                new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
+    fprintf(python_file, "                handle_semi_circle(shape[1], shape[2], shape[3], shape[0], 'white')\n");
+    fprintf(python_file, "                shapes.pop()\n");
+    fprintf(python_file, "                handle_semi_circle(shape[1], new_position, shape[3], shape[0], 'null')\n");
+    fprintf(python_file, "                final_animation.append(shapes.pop())\n");
+    fprintf(python_file, "            elif shape[4] == 'point':\n");
+    fprintf(python_file, "                new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
+    fprintf(python_file, "                handle_point(shape[1], shape[2], shape[0], 'white')\n");
+    fprintf(python_file, "                shapes.pop()\n");
+    fprintf(python_file, "                handle_point(shape[1], new_position, shape[0], 'null')\n");
+    fprintf(python_file, "                final_animation.append(shapes.pop())\n");
+    fprintf(python_file, "            elif shape[4] == 'rectangle':\n");
+    fprintf(python_file, "                new_position = (shape[2][0] + dx, shape[2][1] + dy)\n");
+    fprintf(python_file, "                handle_rectangle(shape[1], shape[2], shape[3], shape[4], shape[0], 'white')\n");
+    fprintf(python_file, "                shapes.pop()\n");
+    fprintf(python_file, "                handle_point(shape[1], new_position, shape[3], shape[4], shape[0], 'null')\n");
+    fprintf(python_file, "                final_animation.append(shapes.pop())\n");
+    fprintf(python_file, "\n");
+    fprintf(python_file, "    for shape in shapes:\n");
+    fprintf(python_file, "        if shape[4] == 'circle':\n");
+    fprintf(python_file, "            shapes.remove(shape)\n");
+    fprintf(python_file, "            handle_circle(shape[1], shape[2], shape[3], shape[0])\n");
+    fprintf(python_file, "        elif shape[4] == 'line':\n");
+    fprintf(python_file, "            shapes.remove(shape)\n");
+    fprintf(python_file, "            handle_line(shape[1], shape[2], shape[3], shape[0])\n");
+    fprintf(python_file, "        elif shape[4] == 'square':\n");
+    fprintf(python_file, "            shapes.remove(shape)\n");
+    fprintf(python_file, "            handle_square(shape[1], shape[2], shape[3], shape[0])\n");
+    fprintf(python_file, "        elif shape[4] == 'semi-circle':\n");
+    fprintf(python_file, "            shapes.remove(shape)\n");
+    fprintf(python_file, "            handle_semi_circle(shape[1], shape[2], shape[3], shape[0])\n");
+    fprintf(python_file, "        elif shape[4] == 'point':\n");
+    fprintf(python_file, "            shapes.remove(shape)\n");
+    fprintf(python_file, "            handle_point(shape[1], shape[2], shape[0])\n");
+    fprintf(python_file, "        elif shape[4] == 'rectangle':\n");
+    fprintf(python_file, "            shapes.remove(shape)\n");
+    fprintf(python_file, "            handle_rectangle(shape[1], shape[2], shape[3], shape[4], shape[0])\n");
+    fprintf(python_file, "\n");
     fprintf(python_file, "    shapes.extend(final_animation)\n");
-    fprintf(python_file, "    animation_shapes = []\n\n");
+    fprintf(python_file, "    animation_shapes = []\n");
+
 }

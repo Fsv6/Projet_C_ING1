@@ -46,7 +46,6 @@ void execute_command(const char *command, FILE *python_file) {
         return;
     }
 
-    printf("Executing command: %s\n", args);
 
     // Match the command name to a known command and execute its associated function
     for (int j = 0; commands[j].name != NULL; j++) {
@@ -108,7 +107,7 @@ void delimit_commands(const char *draw_filename, FILE *python_file) {
             continue;
         }
 
-        // Detect continuation of a block
+        // Detect continuation of a block in the case of "if {...} else {...}" structure
         if (strchr(line, '}') && strchr(line, '{')) {
 
             // Append the line to the buffer
@@ -161,7 +160,6 @@ void delimit_commands(const char *draw_filename, FILE *python_file) {
             strcat(buffer, " ");
         } else {
             // Execute single-line commands outside of blocks
-            printf("Executing command: %s\n", line);
             execute_command(line, python_file);
         }
     }

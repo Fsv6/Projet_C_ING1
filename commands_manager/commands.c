@@ -101,7 +101,7 @@ void call_thickness_func_py(const char *args, FILE *python_file) {
         return;
     }
 
-    fprintf(python_file, "handle_thickness('%s', %d)\n", id, thickness);
+    fprintf(python_file, "handle_thickness(%s, %d)\n", id, thickness);
 }
 
 /*
@@ -111,7 +111,6 @@ and expression before writing the assignment to the Python script.
 */
 void handle_set_variable(const char *args, FILE *python_file) {
 
-    printf("SET command: %s\n", args);
     char variable_name[64], expression[256];
 
     int result = sscanf(args, "VARIABLE %63s = %255[^\n]", variable_name, expression);
@@ -119,8 +118,6 @@ void handle_set_variable(const char *args, FILE *python_file) {
         fprintf(stderr, "Error: Invalid SET command format: '%s'\n", args);
         return;
     }
-
-    printf("Parsed SET command - Variable: '%s', Expression: '%s'\n", variable_name, expression);
 
     for (char *c = variable_name; *c; ++c) {
         if (!((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z') || (*c == '_') || (*c >= '0' && *c <= '9' && c != variable_name))) {
@@ -153,8 +150,6 @@ void call_move_func_py(const char *args, FILE *python_file) {
         return;
     }
 
-    printf("Parsed values - id: %s, distance : %s", id, distance);
-
     // Write a Python call to the function handling the move command
     fprintf(python_file, "handle_move(%s, %s)\n", id, distance);
 }
@@ -175,8 +170,6 @@ void call_goto_func_py(const char *args, FILE *python_file) {
         return;
     }
 
-    printf("Parsed values - id: %s, x : %s, y : %s", id, x, y);
-
     // Write a Python call to the function handling the goto command
     fprintf(python_file, "handle_goto(%s, %s, %s)\n", id, x, y);
 }
@@ -196,10 +189,8 @@ void call_rotate_func_py(const char *args, FILE *python_file) {
         return;
     }
 
-    printf("Parsed values - id: %s, angle : %s", id, angle);
-
     // Write a Python call to the function handling the rotate command
-    fprintf(python_file, "handle_rotate('%s', %s)\n", id, angle);
+    fprintf(python_file, "handle_rotate(%s, %s)\n", id, angle);
 }
 
 /*
@@ -217,8 +208,6 @@ void call_line_func_py(const char *args, FILE *python_file) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
     }
-
-    printf("Parsed values - id: %s, distance : %s, id_form : %s", id, distance, id_form);
 
     // Write a Python call to the function handling the line command
     fprintf(python_file, "handle_line(%s, 'null', %s, %s)\n", id, distance, id_form);
@@ -240,8 +229,6 @@ void call_circle_func_py(const char *args, FILE *python_file) {
         return;
     }
 
-    printf("Parsed values - id: %s, radius : %s, id_form: %s", id, radius, id_form);
-
     // Write a Python call to the function handling the circle command
     fprintf(python_file, "handle_circle(%s, 'null', %s, %s)\n", id, radius, id_form);
 }
@@ -261,8 +248,6 @@ void call_square_func_py(const char *args, FILE *python_file) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
     }
-
-    printf("Parsed values - id: %s, side_length : %s, id_form: %s", id, side_length, id_form);
 
     // Write a Python call to the function handling the square command
     fprintf(python_file, "handle_square(%s, 'null', %s, %s)\n", id, side_length, id_form);
@@ -285,8 +270,6 @@ void call_rectangle_func_py(const char *args, FILE *python_file) {
         return;
     }
 
-    printf("Parsed values - id: %s, side_1 : %s, side_2 : %s, id_form: %s", id, side_1, side_2, id_form);
-
     // Write a Python call to the function handling the rectangle command
     fprintf(python_file, "handle_rectangle(%s, 'null', %s, %s, %s)\n", id, side_1, side_2, id_form);
 }
@@ -306,10 +289,8 @@ void call_point_func_py(const char *args, FILE *python_file) {
         return;
     }
 
-    printf("Parsed values - id: %s, id_form: %s", id, id_form);
-
     // Write a Python call to the function handling the point command
-    fprintf(python_file, "handle_point('%s', 'null', %s)\n", id, id_form);
+    fprintf(python_file, "handle_point(%s, 'null', %s)\n", id, id_form);
 }
 
 /*
@@ -327,8 +308,6 @@ void call_arc_func_py(const char *args, FILE *python_file) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
     }
-
-    printf("Parsed values - id: %s, radius : %s, id_form: %s", id, radius, id_form);
 
     // Write a Python call to the function handling the arc command
     fprintf(python_file, "handle_semi_circle(%s, 'null', %s, %s)\n", id, radius, id_form);
@@ -350,8 +329,6 @@ void call_animation_func_py(const char *args, FILE *python_file) {
         fprintf(stderr, "Error: Failed to parse args: '%s'\n", args);
         return;
     }
-
-    printf("Parsed values - ids: %s, move_distance : %s, move_r : %s, angle_degrees : %s", ids, move_distance, move_r, angle_degrees);
 
     // Write the Python code for animating the figures
     fprintf(python_file, "set_all_cursors_speed(0)\n");
